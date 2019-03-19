@@ -18,7 +18,7 @@ public class BigchainDBRunner {
     //获取配置文件的BigchainDB的url
 
 
-    private static String url= PropertyUtil.getProperties("url");
+    private static String url = PropertyUtil.getProperties("url");
 
     /**
      * 连接BigchainDB

@@ -7,13 +7,17 @@ import java.util.TreeMap;
 
 public class MetaData {
 
-    /** The id. */
+    /**
+     * The id.
+     */
     @SerializedName("id")
     private String id;
 
-    /** The metadata. */
+    /**
+     * The metadata.
+     */
     @SerializedName("metadata")
-    private Map<String,Object> metadata=new TreeMap<String, Object>() ;
+    private Map<String, Object> metadata = new TreeMap<String, Object>();
 
     /**
      * Gets the id.

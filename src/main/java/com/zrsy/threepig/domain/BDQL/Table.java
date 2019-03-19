@@ -8,6 +8,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.operators.relational.*;
 
+
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -85,11 +86,11 @@ public class Table {
     }
 
     /**
-     * 通过asserts获得表数据
+     * 通过asserts获得表数据和表头（列名）
      *
      * @param assets
      */
-    public void setTableData(Assets assets) {
+    public void setTableDataWithColumnName(Assets assets) {
         List<String> result = new ArrayList<String>();
         if (!(this.tableName.equals(null) && this.type.equals(null))) {
             for (Asset asset : assets.getAssets()) {
@@ -117,7 +118,51 @@ public class Table {
         }
     }
 
+    /**
+     * 根据assets设置表数据
+     * @param assets
+     */
+    public void setTableData(Assets assets) {
+        List<Map> data = new LinkedList<>();
+        if (!(this.tableName.equals(null) && this.type.equals(null) && this.columnName.equals(null))) {
+            for (Asset asset : assets.getAssets()) {
+                LinkedTreeMap<String, Object> map = (LinkedTreeMap) asset.getData();
+                map = (LinkedTreeMap) map.get("tableData");
+                Map map1 = new HashMap();
+                for (String name : this.columnName) {
+                    map1.put(name, map.get(name));
+                }
+                data.add(map1);
+            }
+        }
+        this.data=data;
+    }
+
+    /**
+     * 根据metadatas设置表数据
+     * @param metaDatas
+     */
     public void setTableData(List<MetaData> metaDatas) {
+        List<Map> data = new LinkedList<>();
+        if (!(this.tableName.equals(null) && this.type.equals(null) && this.columnName.equals(null))) {
+            for (MetaData metaData : metaDatas) {
+                LinkedTreeMap<String, Object> map = (LinkedTreeMap) metaData.getMetadata();
+                map = (LinkedTreeMap) map.get("tableData");
+                Map map1 = new HashMap();
+                for (String name : this.columnName) {
+                    map1.put(name, map.get(name));
+                }
+                data.add(map1);
+            }
+        }
+        this.data=data;
+    }
+
+    /**
+     * 根据metadatas设置表数据和表头（列名）
+     * @param metaDatas
+     */
+    public void setTableDataWithCloumnName(List<MetaData> metaDatas) {
         List<String> result = new ArrayList<String>();
         if (!(this.tableName.equals(null) && this.type.equals(null))) {
             for (MetaData metadata : metaDatas) {
@@ -147,72 +192,65 @@ public class Table {
 
     }
 
-    public void setTableData(Assets assets, Expression expression){
-        setTableData(assets);
-        setTablesWhere(expression);
-    }
-    public void setTableData(List<MetaData> metaDatas, Expression expression){
-        setTableData(metaDatas);
-        setTablesWhere(expression);
-    }
 
-    private void setTablesWhere(Expression expression){
-        List<Map> newList=new ArrayList<>();
-        if(expression instanceof EqualsTo){
-            String left=((EqualsTo)expression).getLeftExpression().toString();
-            String right=((EqualsTo)expression).getRightExpression().toString();
-            for(Map map:this.data){
-                if(map.get(left).toString().equals(right)){
+
+    private void setTablesWhere(Expression expression) {
+        List<Map> newList = new ArrayList<>();
+        if (expression instanceof EqualsTo) {
+            String left = ((EqualsTo) expression).getLeftExpression().toString();
+            String right = ((EqualsTo) expression).getRightExpression().toString();
+            for (Map map : this.data) {
+                if (map.get(left).toString().equals(right)) {
                     newList.add(map);
 
                 }
             }
-            this.data=newList;
+            this.data = newList;
         }
-        if(expression instanceof GreaterThan){
-            String left=((GreaterThan)expression).getLeftExpression().toString();
-            String right=((GreaterThan)expression).getRightExpression().toString();
-            int R=Integer.parseInt(right);
-            for(Map map:this.data){
-                if(Integer.parseInt(map.get(left).toString())>R){
+        if (expression instanceof GreaterThan) {
+            String left = ((GreaterThan) expression).getLeftExpression().toString();
+            String right = ((GreaterThan) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Map map : this.data) {
+                if (Integer.parseInt(map.get(left).toString()) > R) {
                     newList.add(map);
                 }
             }
-            this.data=newList;
+            this.data = newList;
 
         }
-        if(expression instanceof GreaterThanEquals){
-            String left=((GreaterThanEquals)expression).getLeftExpression().toString();
-            String right=((GreaterThanEquals)expression).getRightExpression().toString();
-            int R=Integer.parseInt(right);
-            for(Map map:this.data){
-                if(Integer.parseInt(map.get(left).toString())>=R){
+        if (expression instanceof GreaterThanEquals) {
+            String left = ((GreaterThanEquals) expression).getLeftExpression().toString();
+            String right = ((GreaterThanEquals) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Map map : this.data) {
+                if (Integer.parseInt(map.get(left).toString()) >= R) {
                     newList.add(map);
                 }
             }
-            this.data=newList;
+            this.data = newList;
         }
-        if(expression instanceof MinorThan){
-            String left=((MinorThan)expression).getLeftExpression().toString();
-            String right=((MinorThan)expression).getRightExpression().toString();
-            int R=Integer.parseInt(right);
-            for(Map map:this.data){
-                if(Integer.parseInt(map.get(left).toString())<R){
+        if (expression instanceof MinorThan) {
+            String left = ((MinorThan) expression).getLeftExpression().toString();
+            String right = ((MinorThan) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Map map : this.data) {
+                if (Integer.parseInt(map.get(left).toString()) < R) {
                     newList.add(map);
                 }
             }
-            this.data=newList;
+            this.data = newList;
         }
-        if(expression instanceof MinorThanEquals){
-            String left=((MinorThanEquals)expression).getLeftExpression().toString();
-            String right=((MinorThanEquals)expression).getRightExpression().toString();
-            int R=Integer.parseInt(right);
-            for(Map map:this.data){
-                if(Integer.parseInt(map.get(left).toString())<=R){
+        if (expression instanceof MinorThanEquals) {
+            String left = ((MinorThanEquals) expression).getLeftExpression().toString();
+            String right = ((MinorThanEquals) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Map map : this.data) {
+                if (Integer.parseInt(map.get(left).toString()) <= R) {
                     newList.add(map);
                 }
             }
-            this.data=newList;
+            this.data = newList;
         }
 
     }
@@ -263,8 +301,8 @@ public class Table {
     }
 
     public static void main(String[] args) throws IOException {
-        String a="dfasdf";
-        int b=Integer.parseInt(a);
+        String a = "dfasdf";
+        int b = Integer.parseInt(a);
         System.out.println(b);
     }
 }

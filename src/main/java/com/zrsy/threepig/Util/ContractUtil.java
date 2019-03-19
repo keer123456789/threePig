@@ -24,12 +24,14 @@ public class ContractUtil {
     private  String Pig_address;
     @Value("${account_address}")
     private String account_address;
+
     public Pig PigLoad(){
         Web3j web3j=Web3j.build(new HttpService(web3_url));
         TransactionManager clientTransactionManager=new ClientTransactionManager(web3j,account_address) ;
         ContractGasProvider contractGasProvider=new DefaultGasProvider();
         return  Pig.load(Pig_address,web3j,clientTransactionManager,contractGasProvider.getGasPrice(),contractGasProvider.getGasLimit());
     }
+
     public Pig PigLoad(String accountAddress){
         Web3j web3j=Web3j.build(new HttpService(web3_url));
         TransactionManager clientTransactionManager=new ClientTransactionManager(web3j,accountAddress) ;

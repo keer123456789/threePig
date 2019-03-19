@@ -565,16 +565,16 @@ public class BigchainDBUtil {
             return null;
         }
 
-        return  JSON.parseArray(body, MetaData.class);
+        return JSON.parseArray(body, MetaData.class);
     }
 
-    public static Transaction getTransactionByTXID(String ID){
-        logger.info("开始查询交易信息：TXID："+ID);
+    public static Transaction getTransactionByTXID(String ID) {
+        logger.info("开始查询交易信息：TXID：" + ID);
         try {
             logger.info("查询成功！！！！！！");
             return TransactionsApi.getTransactionById(ID);
         } catch (IOException e) {
-            logger.error("交易不存在，TXID："+ID);
+            logger.error("交易不存在，TXID：" + ID);
             return null;
         }
     }

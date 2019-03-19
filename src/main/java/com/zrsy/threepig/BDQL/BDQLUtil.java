@@ -44,12 +44,13 @@ public class BDQLUtil {
 
     /**
      * 去掉字符串的第一个和最后一个单引号
+     *
      * @param s
      * @return
      */
-    public static String fixString(String s){
-        if(s.substring(0,1).equals("'")&&s.substring(s.length()-1,s.length()).equals("'")){
-            return s.substring(1,s.length()-1);
+    public static String fixString(String s) {
+        if (s.substring(0, 1).equals("'") && s.substring(s.length() - 1, s.length()).equals("'")) {
+            return s.substring(1, s.length() - 1);
         }
         return s;
     }
@@ -96,47 +97,48 @@ public class BDQLUtil {
 
     /**
      * 通过公钥获得全部表数据
+     *
      * @param pubkey
      * @return
      * @throws IOException
      */
     public static Map<String, Table> getAlltablesByPubKey(String pubkey) throws IOException {
 
-        Map<String,Table> result=new HashMap<String, Table>();
+        Map<String, Table> result = new HashMap<String, Table>();
 
 
-        Transactions transactions= BigchainDBUtil.getAllTransactionByPubKey(pubkey);
-        LinkedTreeMap map=new LinkedTreeMap();
-        for(Transaction transaction:transactions.getTransactions()){
-            if(transaction.getOperation().equals("\"CREATE\"")){
-                map=(LinkedTreeMap) transaction.getAsset().getData();
-                if(!result.containsKey(map.get("tableName"))){
-                    Table table=new Table();
+        Transactions transactions = BigchainDBUtil.getAllTransactionByPubKey(pubkey);
+        LinkedTreeMap map = new LinkedTreeMap();
+        for (Transaction transaction : transactions.getTransactions()) {
+            if (transaction.getOperation().equals("\"CREATE\"")) {
+                map = (LinkedTreeMap) transaction.getAsset().getData();
+                if (!result.containsKey(map.get("tableName"))) {
+                    Table table = new Table();
                     table.setTableName(map.get("tableName").toString());
                     table.setType("CREATE");
                     table.setColumnName(transaction);
 //                    table.setRowData(transaction);
-                    result.put(table.getTableName(),table);
-                }else{
-                    Table table=result.get(map.get("tableName"));
+                    result.put(table.getTableName(), table);
+                } else {
+                    Table table = result.get(map.get("tableName"));
                     table.setColumnName(transaction);
 //                    table.setRowData(transaction);
-                    result.put(table.getTableName(),table);
+                    result.put(table.getTableName(), table);
                 }
-            }else{
-                map=(LinkedTreeMap) transaction.getMetaData();
-                if(!result.containsKey(map.get("tableName"))){
-                    Table table=new Table();
+            } else {
+                map = (LinkedTreeMap) transaction.getMetaData();
+                if (!result.containsKey(map.get("tableName"))) {
+                    Table table = new Table();
                     table.setTableName(map.get("tableName").toString());
                     table.setType("TRANSFER");
                     table.setColumnName(transaction);
 //                    table.setRowData(transaction);
-                    result.put(table.getTableName(),table);
-                }else{
-                    Table table=result.get(map.get("tableName"));
+                    result.put(table.getTableName(), table);
+                } else {
+                    Table table = result.get(map.get("tableName"));
                     table.setColumnName(transaction);
 //                    table.setRowData(transaction);
-                    result.put(table.getTableName(),table);
+                    result.put(table.getTableName(), table);
                 }
             }
         }

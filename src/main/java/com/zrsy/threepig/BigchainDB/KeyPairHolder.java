@@ -16,7 +16,7 @@ import java.security.KeyPair;
 public class KeyPairHolder {
     private static Logger logger = LoggerFactory.getLogger(KeyPairHolder.class);
 
-    private static String keyPath= PropertyUtil.getProperties("keyPath");
+    private static String keyPath = PropertyUtil.getProperties("keyPath");
 
     /**
      * 通过./keypair.txt获得密钥对
@@ -42,15 +42,15 @@ public class KeyPairHolder {
     }
 
 
-    public static String getKeyPairFormTXT(){
+    public static String getKeyPairFormTXT() {
         try {
             FileInputStream in = new FileInputStream(keyPath);
             byte[] buffer = new byte[in.available()];
             in.read(buffer);
             String key = new String(buffer);
-            logger.info("成功获得"+keyPath+"路径下的密钥");
+            logger.info("成功获得" + keyPath + "路径下的密钥");
             return key;
-        }catch(Exception e){
+        } catch (Exception e) {
             logger.error("对应路径下没有密钥文件");
             return null;
         }
@@ -63,7 +63,7 @@ public class KeyPairHolder {
      */
     public static void SaveKeyPairToTXT(KeyPair keyPair) {
         try {
-            logger.info("开始写密钥到"+keyPath);
+            logger.info("开始写密钥到" + keyPath);
             FileOutputStream fos = new FileOutputStream(keyPath);
             fos.write(KeyPairUtils.encodePrivateKeyBase64(keyPair).getBytes());
             fos.close();
@@ -95,16 +95,17 @@ public class KeyPairHolder {
      * @return
      */
     public static EdDSAPublicKey getPublic() {
-        logger.info("获得"+keyPath+"中的公钥");
+        logger.info("获得" + keyPath + "中的公钥");
         return (EdDSAPublicKey) getKeyPairFromTXT().getPublic();
     }
 
     /**
      * 公钥转换成字符串
+     *
      * @param key
      * @return
      */
-    public static String pubKeyToString(EdDSAPublicKey key){
+    public static String pubKeyToString(EdDSAPublicKey key) {
         return KeyPairUtils.encodePublicKeyInBase58(key);
     }
 
@@ -114,7 +115,7 @@ public class KeyPairHolder {
      * @return
      */
     public static EdDSAPrivateKey getPrivate() {
-        logger.info("获得"+keyPath+"中的私钥");
+        logger.info("获得" + keyPath + "中的私钥");
         return (EdDSAPrivateKey) getKeyPairFromTXT().getPrivate();
     }
 

@@ -13,8 +13,7 @@ import com.zrsy.threepig.domain.BDQL.Table;
 import com.zrsy.threepig.domain.ParserResult;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
@@ -110,7 +109,7 @@ public class BDQLParser {
         PlainSelect selectBody = (PlainSelect) select.getSelectBody();
 
 
-        Expression expression =  selectBody.getWhere();
+        Expression expression = selectBody.getWhere();
         //获得表名
         TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
         List<String> tableNames = tablesNamesFinder.getTableList(select);
@@ -125,46 +124,52 @@ public class BDQLParser {
             table.setTableName(tableNames.get(0));
             //获得列名
             ArrayList<String> columnNames = (ArrayList<String>) getColumnNames(selectBody);
-            if (expression instanceof EqualsTo&&((EqualsTo)expression).getLeftExpression().toString().equals("ID")) {//存在交易ID
-                String TXID = ((EqualsTo)expression).getRightExpression().toString();
-                Transaction transaction= BigchainDBUtil.getTransactionByTXID(TXID);
-                if(transaction.getOperation().equals("CREATE")){
+            if (expression instanceof EqualsTo && ((EqualsTo) expression).getLeftExpression().toString().equals("ID")) {//存在交易ID
+                String TXID = ((EqualsTo) expression).getRightExpression().toString();
+                Transaction transaction = BigchainDBUtil.getTransactionByTXID(TXID);
+                if (transaction.getOperation().equals("CREATE")) {
                     table.setType("CREATE");
-                    Assets assets=new Assets();
-                    Asset asset=transaction.getAsset();
+                    Assets assets = new Assets();
+                    Asset asset = transaction.getAsset();
                     assets.addAsset(asset);
-                    table.setTableData(assets);
+                    table.setTableDataWithColumnName(assets);
 
-                }else{
+                } else {
                     table.setType("TRANSFER");
-                    List<MetaData> metaDatas=new LinkedList<MetaData>();
-                    MetaData metaData= (MetaData) transaction.getMetaData();
+                    List<MetaData> metaDatas = new LinkedList<MetaData>();
+                    MetaData metaData = (MetaData) transaction.getMetaData();
                     metaDatas.add(metaData);
-                    table.setTableData(metaDatas);
+                    table.setTableDataWithCloumnName(metaDatas);
                 }
 
             } else {
                 if (columnNames.size() == 1 && columnNames.get(0).equals("*")) {
-                    if(BigchainDBUtil.getAssetByKey(table.getTableName()).size()==0){
-                        List<MetaData> metaDatas=BigchainDBUtil.getMetaDatasByKey(table.getTableName());
+                    if (BigchainDBUtil.getAssetByKey(table.getTableName()).size() == 0) {
+                        List<MetaData> metaDatas = BigchainDBUtil.getMetaDatasByKey(table.getTableName());
                         table.setType("TRANSFER");
-                        table.setTableData(metaDatas,expression);
-                    }else{
-                        Assets assets=BigchainDBUtil.getAssetByKey(table.getTableName());
+                        List<MetaData> newMetadatas=selectMetadata(metaDatas,expression);
+                        table.setTableDataWithCloumnName(newMetadatas);
+                    } else {
+                        Assets assets = BigchainDBUtil.getAssetByKey(table.getTableName());
                         table.setType("CREATE");
-                        table.setTableData(assets,expression);
+                        Assets newAssets=selectAssets(assets,expression);
+                        table.setTableDataWithColumnName(newAssets);
                     }
                 } else {
-                    if(BigchainDBUtil.getAssetByKey(table.getTableName()).size()==0){
-                        List<MetaData> metaDatas=BigchainDBUtil.getMetaDatasByKey(table.getTableName());
+                    if (BigchainDBUtil.getAssetByKey(table.getTableName()).size() == 0) {
+                        List<MetaData> metaDatas = BigchainDBUtil.getMetaDatasByKey(table.getTableName());
                         table.setType("TRANSFER");
-                        table.setTableData(metaDatas,expression);
                         table.setColumnName(columnNames);
-                    }else{
-                        Assets assets=BigchainDBUtil.getAssetByKey(table.getTableName());
+                        List<MetaData> newMetadatas=selectMetadata(metaDatas,expression);
+                        table.setTableData(newMetadatas);
+
+                    } else {
+                        Assets assets = BigchainDBUtil.getAssetByKey(table.getTableName());
                         table.setType("CREATE");
-                        table.setTableData(assets,expression);
                         table.setColumnName(columnNames);
+                        Assets newAssets=selectAssets(assets,expression);
+                        table.setTableData(newAssets);
+
                     }
                 }
             }
@@ -174,7 +179,6 @@ public class BDQLParser {
             result.setMessage("select");
             return result;
         }
-
 
 
     }
@@ -198,6 +202,165 @@ public class BDQLParser {
         return str_items;
     }
 
+    /**
+     * 根据where挑选asset
+     * @param assets
+     * @param expression
+     * @return
+     */
+    private static Assets selectAssets(Assets assets,Expression expression){
+        if(expression==null){
+            return assets;
+        }
+        Assets newAssets=new Assets();
+        if (expression instanceof EqualsTo) {
+            String left = ((EqualsTo) expression).getLeftExpression().toString();
+            String right = ((EqualsTo) expression).getRightExpression().toString();
+            for (Asset asset : assets.getAssets()) {
+                Map map=(Map) asset.getData();
+                Map map1=(Map) map.get("tableData");
+                if(map1.get(left).toString().equals(right)){
+                    newAssets.addAsset(asset);
+                }
+            }
+
+        }
+        if (expression instanceof GreaterThan) {
+            String left = ((GreaterThan) expression).getLeftExpression().toString();
+            String right = ((GreaterThan) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Asset asset : assets.getAssets()) {
+                Map map=(Map) asset.getData();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())>R){
+                    newAssets.addAsset(asset);
+                }
+            }
+
+
+        }
+        if (expression instanceof GreaterThanEquals) {
+            String left = ((GreaterThanEquals) expression).getLeftExpression().toString();
+            String right = ((GreaterThanEquals) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Asset asset : assets.getAssets()) {
+                Map map=(Map) asset.getData();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())>=R){
+                    newAssets.addAsset(asset);
+                }
+            }
+
+        }
+        if (expression instanceof MinorThan) {
+            String left = ((MinorThan) expression).getLeftExpression().toString();
+            String right = ((MinorThan) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Asset asset : assets.getAssets()) {
+                Map map=(Map) asset.getData();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())<R){
+                    newAssets.addAsset(asset);
+                }
+            }
+
+        }
+        if (expression instanceof MinorThanEquals) {
+            String left = ((MinorThanEquals) expression).getLeftExpression().toString();
+            String right = ((MinorThanEquals) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (Asset asset : assets.getAssets()) {
+                Map map=(Map) asset.getData();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())<=R){
+                    newAssets.addAsset(asset);
+                }
+            }
+
+        }
+        return newAssets;
+
+    }
+
+    /**
+     * 根据where挑选metadata
+     * @param metaDataList
+     * @param expression
+     * @return
+     */
+    private static List<MetaData> selectMetadata(List<MetaData> metaDataList,Expression expression){
+        if(expression==null){
+            return metaDataList;
+        }
+        List<MetaData> newMetadata=new ArrayList<>();
+        if (expression instanceof EqualsTo) {
+            String left = ((EqualsTo) expression).getLeftExpression().toString();
+            String right = ((EqualsTo) expression).getRightExpression().toString();
+            for (MetaData metaData : metaDataList) {
+                Map map= metaData.getMetadata();
+                Map map1=(Map) map.get("tableData");
+                if(map1.get(left).toString().equals(right)){
+                    newMetadata.add(metaData);
+                }
+            }
+
+        }
+        if (expression instanceof GreaterThan) {
+            String left = ((GreaterThan) expression).getLeftExpression().toString();
+            String right = ((GreaterThan) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (MetaData metaData : metaDataList) {
+                Map map= metaData.getMetadata();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())>R){
+                    newMetadata.add(metaData);
+                }
+            }
+
+
+        }
+        if (expression instanceof GreaterThanEquals) {
+            String left = ((GreaterThanEquals) expression).getLeftExpression().toString();
+            String right = ((GreaterThanEquals) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (MetaData metaData : metaDataList) {
+                Map map= metaData.getMetadata();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())>=R){
+                    newMetadata.add(metaData);
+                }
+            }
+
+        }
+        if (expression instanceof MinorThan) {
+            String left = ((MinorThan) expression).getLeftExpression().toString();
+            String right = ((MinorThan) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (MetaData metaData : metaDataList) {
+                Map map= metaData.getMetadata();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())<R){
+                    newMetadata.add(metaData);
+                }
+            }
+
+        }
+        if (expression instanceof MinorThanEquals) {
+            String left = ((MinorThanEquals) expression).getLeftExpression().toString();
+            String right = ((MinorThanEquals) expression).getRightExpression().toString();
+            int R = Integer.parseInt(right);
+            for (MetaData metaData : metaDataList) {
+                Map map= metaData.getMetadata();
+                Map map1=(Map) map.get("tableData");
+                if(Integer.parseInt(map1.get(left).toString())<=R){
+                    newMetadata.add(metaData);
+                }
+            }
+
+        }
+        return newMetadata;
+
+    }
 
     /**
      * 开始解析insert语句
@@ -339,15 +502,15 @@ public class BDQLParser {
     public static void main(String[] args) throws InterruptedException, IOException {
         ParserResult result = new ParserResult();
         BigchainDBRunner.StartConn();
-        for (int j=0;j<10;j++) {
-            result = BDQLUtil.work("INSERT INTO Computer (id, ip,mac,size,cpu,ROM,RAM) VALUES ('"+(j+1)+"','"+(j+2)+"','Champs-Elysees','"+(j+3)+"','i7','"+(j+4)+"','"+(j+5)+"')");
+        for (int j = 0; j < 10; j++) {
+            result = BDQLUtil.work("INSERT INTO Computer (id, ip,mac,size,cpu,ROM,RAM) VALUES ('" + (j + 1) + "','" + (j + 2) + "','Champs-Elysees','" + (j + 3) + "','i7','" + (j + 4) + "','" + (j + 5) + "')");
             String id = (String) result.getData();
             logger.info("资产ID：" + id);
 
             logger.info(BigchainDBUtil.checkTransactionExit(id) + "");
             ParserResult result1 = new ParserResult();
             for (int i = 0; i < 10; i++) {
-                result1 = BDQLUtil.work("UPDATE Person SET FirstName = '" + i + "' , SecondName='"+j+"',age= '"+(i+j)+"',time='"+(i+j+10)+"' WHERE ID='" + id + "'");
+                result1 = BDQLUtil.work("UPDATE Person SET FirstName = '" + i + "' , SecondName='" + j + "',age= '" + (i + j) + "',time='" + (i + j + 10) + "' WHERE ID='" + id + "'");
                 logger.info("交易ID：" + result1.getData());
                 Thread.sleep(2000);
 
@@ -359,7 +522,7 @@ public class BDQLParser {
         for (Output output : outputs.getOutput()) {
             logger.info("交易ID：" + output.getTransactionId() + ",密钥：" + output.getPublicKeys());
         }
-        result=BDQLUtil.work("Select * from Computer where cpu= i7");
+        result = BDQLUtil.work("Select * from Computer where cpu= i7");
         logger.info(result.getData().toString());
 
     }

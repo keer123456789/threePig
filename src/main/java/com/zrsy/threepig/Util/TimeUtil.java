@@ -96,12 +96,13 @@ public class TimeUtil {
 
     /**
      * 比较两个时间先后
+     *
      * @param date1
      * @param date2
      * @return
      * @throws ParseException
      */
-    public static boolean compaireTime(String date1,String date2) throws ParseException {
+    public static boolean compaireTime(String date1, String date2) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date d1 = sdf.parse(date1);
         Date d2 = sdf.parse(date2);
@@ -113,6 +114,6 @@ public class TimeUtil {
     }
 
     public static void main(String[] args) throws ParseException {
-        System.out.print(compaireTime("2019-02-28 11:10:11","2019-02-27 10:10:10"));
+        System.out.print(compaireTime("2019-02-28 11:10:11", "2019-02-27 10:10:10"));
     }
 }

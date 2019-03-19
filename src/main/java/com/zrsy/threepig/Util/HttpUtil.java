@@ -75,7 +75,7 @@ public class HttpUtil {
      * 发送httppost请求
      *
      * @param url
-     * @param data  提交的参数为key=value&key1=value1的形式
+     * @param data 提交的参数为key=value&key1=value1的形式
      * @return
      */
     public static String httpPost(String url, String data) {
@@ -91,7 +91,6 @@ public class HttpUtil {
         }
         return result;
     }
-
 
 
 }
