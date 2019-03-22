@@ -1,0 +1,39 @@
+package com.zrsy.threepig.controller.web;
+
+import com.zrsy.threepig.domain.ParserResult;
+import com.zrsy.threepig.service.web.implement.RoleServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
+
+/**
+ * 角色管理
+ */
+@RestController
+public class RoleController {
+    protected static final Logger logger = LoggerFactory.getLogger(RoleController.class);
+
+    @Autowired
+    RoleServiceImpl roleService;
+
+    @PostMapping("/addRole")
+    public ParserResult addRole(@RequestBody Map map) {
+        return roleService.addRole((Map)map.get("data"));
+    }
+
+    @GetMapping("/getAllRole")
+    public ParserResult getAllRole(){
+        return roleService.getAllRole();
+    }
+
+    @PostMapping("/changeRolePowerAndFName")
+    public ParserResult changeRolePowerAndFName(@RequestBody Map map){
+        return roleService.changeRolePowerAndFName((Map)map.get("data"));
+    }
+}
