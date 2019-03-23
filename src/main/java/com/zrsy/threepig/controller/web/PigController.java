@@ -24,6 +24,7 @@ public class PigController {
      */
     @PostMapping("/addpig")
     public ParserResult addPig(@RequestBody Map map) {
+        logger.info("接受到添加新猪的请求！******开始添加");
         return pigService.addPig((Map) map.get("data"));
     }
 
@@ -34,17 +35,31 @@ public class PigController {
      */
     @GetMapping("/getAllPig")
     public ParserResult getAllPig() {
+        logger.info("接收到获得养殖场全部猪的信息请求！*****开始获取");
         return pigService.getAllPig();
     }
 
-
-    @RequestMapping(value = "/getPigInfo/{pigId}",method = RequestMethod.GET)
-    public ParserResult getPigInfo(@PathVariable String pigId){
+    /**
+     * 获得该猪的详细信息
+     *
+     * @param pigId 猪耳号
+     * @return
+     */
+    @RequestMapping(value = "/getPigInfo/{pigId}", method = RequestMethod.GET)
+    public ParserResult getPigInfo(@PathVariable String pigId) {
+        logger.info("接收到获取耳号为：" + pigId + "猪的全部信息！****开始获取。");
         return pigService.getPigInfo(pigId);
     }
 
-    @RequestMapping(value = "/getPigList/{pigHouseId}",method = RequestMethod.GET)
-    public ParserResult getPigList(@PathVariable String pigHouseId){
+    /**
+     * 获取该猪舍的猪的信息列表
+     *
+     * @param pigHouseId
+     * @return
+     */
+    @RequestMapping(value = "/getPigList/{pigHouseId}", method = RequestMethod.GET)
+    public ParserResult getPigList(@PathVariable String pigHouseId) {
+        logger.info("接收到获取猪舍号为：" + pigHouseId + "内的猪的信息列表请求！****开始获取。");
         return pigService.getPigList(pigHouseId);
     }
 

@@ -19,27 +19,38 @@ public class PigHouseController {
 
     @Autowired
     PigHouseService pigHouseService;
+
     /**
-     *增加猪舍
+     * 增加猪舍
+     *
      * @param map
      * @return
      */
     @PostMapping("/addPighouse")
-    public ParserResult addPigHouse(@RequestBody Map map){
+    public ParserResult addPigHouse(@RequestBody Map map) {
+        logger.info("接收到添加猪舍信息的请求！*****开始添加");
         return pigHouseService.addPigHouse((Map) map.get("data"));
     }
 
     /**
      * 获得所有猪舍信息
+     *
      * @return
      */
     @GetMapping("/pigHouseList")
-    public ParserResult getPigHouseList(){
+    public ParserResult getPigHouseList() {
+        logger.info("接收到获取所有猪舍信息的请求！*****开始获取。");
         return pigHouseService.getPigHouseList();
     }
 
+    /**
+     * 获取所有猪舍号列表
+     *
+     * @return
+     */
     @GetMapping("/pigHouseIdList")
-    public ParserResult getPighouseIDList(){
+    public ParserResult getPighouseIDList() {
+        logger.info("接收到获取所有猪舍号列表的请求！*****开始获取。");
         return pigHouseService.getPigHouseIDList();
     }
 }

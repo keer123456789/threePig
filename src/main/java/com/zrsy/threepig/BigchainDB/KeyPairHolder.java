@@ -13,6 +13,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.KeyPair;
 
+/**
+ * BigchainDB秘钥的存放
+ */
 public class KeyPairHolder {
     private static Logger logger = LoggerFactory.getLogger(KeyPairHolder.class);
 

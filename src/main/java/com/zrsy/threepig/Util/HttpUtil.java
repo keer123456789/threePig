@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+/**
+ * 封装了post，get的http请求类
+ */
 public class HttpUtil {
     private static Logger logger = LoggerFactory.getLogger(HttpUtil.class);
 

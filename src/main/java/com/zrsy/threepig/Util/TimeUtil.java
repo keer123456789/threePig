@@ -5,6 +5,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * 工具类
+ * 时间和时间格式操作
+ */
 public class TimeUtil {
 
 

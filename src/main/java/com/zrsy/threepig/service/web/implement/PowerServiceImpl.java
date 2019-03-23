@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * PowerServiceImpl 将权利的管理再合约上实现。
+ */
 @Service
 public class PowerServiceImpl implements PowerService {
     protected static final Logger logger = LoggerFactory.getLogger(PowerServiceImpl.class);
@@ -126,6 +129,11 @@ public class PowerServiceImpl implements PowerService {
         return parserResult;
     }
 
+    /**
+     * 禁用权限
+     * @param powerId
+     * @return
+     */
     @Override
     public ParserResult deletePower(String powerId) {
         ParserResult parserResult=new ParserResult();
@@ -145,6 +153,10 @@ public class PowerServiceImpl implements PowerService {
         return parserResult;
     }
 
+    /**
+     * 获得所有权限的权限ID
+     * @return
+     */
     @Override
     public ParserResult getAllPowerId() {
         ParserResult parserResult=new ParserResult();

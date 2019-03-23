@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * RoleServiceImpl 将角色的管理再合约上实现。
+ */
 @Service
 public class RoleServiceImpl implements RoleService {
     protected static final Logger logger = LoggerFactory.getLogger(RoleServiceImpl.class);

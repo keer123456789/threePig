@@ -10,6 +10,9 @@ import org.web3j.protocol.http.HttpService;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * 针对geth的personal接口的工具类
+ */
 public class EthereumUtil {
     @Value("${web3_url}")
     private String web3_url;
@@ -56,6 +59,7 @@ public class EthereumUtil {
      */
     public boolean UnlockAccount(String address,String password){
         Admin web3j = Admin.build(new HttpService(web3_url));
+
         PersonalUnlockAccount personalUnlockAccount=null;
         try {
             personalUnlockAccount=web3j.personalUnlockAccount(address,password).send();

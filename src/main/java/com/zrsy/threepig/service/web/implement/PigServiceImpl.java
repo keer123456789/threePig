@@ -59,6 +59,11 @@ public class PigServiceImpl implements PigService {
         return parserResult;
     }
 
+    /**
+     * 通过BDQL查询该猪的信息
+     * @param earId 猪earID
+     * @return
+     */
     @Override
     public ParserResult getPigInfo(String earId) {
         ParserResult parserResult =new ParserResult();
@@ -69,6 +74,12 @@ public class PigServiceImpl implements PigService {
         return parserResult;
     }
 
+
+    /**
+     * 获得该猪舍内猪的信息列表
+     * @param pigHouseId 猪舍号
+     * @return
+     */
     @Override
     public ParserResult getPigList(String pigHouseId) {
         ParserResult parserResult=BDQLUtil.work("select earId,breed,column,ringNumber,matingWeek,remarks from pigInfo where pigstyId ="+pigHouseId);
