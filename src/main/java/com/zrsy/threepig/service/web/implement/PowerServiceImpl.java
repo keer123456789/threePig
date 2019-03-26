@@ -3,11 +3,13 @@ package com.zrsy.threepig.service.web.implement;
 import com.zrsy.threepig.Contract.RBAC.User;
 
 import com.zrsy.threepig.Util.ContractUtil;
+import com.zrsy.threepig.Util.EthereumUtil;
 import com.zrsy.threepig.domain.ParserResult;
 import com.zrsy.threepig.service.web.PowerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.tuples.generated.Tuple4;
 
@@ -23,8 +25,15 @@ import java.util.Map;
 @Service
 public class PowerServiceImpl implements PowerService {
     protected static final Logger logger = LoggerFactory.getLogger(PowerServiceImpl.class);
+
     @Autowired
     ContractUtil contractUtil;
+
+    @Autowired
+    EthereumUtil ethereumUtil;
+
+    @Value("${account_address}")
+    private String root_address;
 
     /**
      * 增加权限
@@ -37,6 +46,7 @@ public class PowerServiceImpl implements PowerService {
         ParserResult parserResult = new ParserResult();
         User user = contractUtil.UserLoad();
         try {
+            ethereumUtil.UnlockAccount(root_address,"11111111");
             user.addPower(new BigInteger(map.get("powerId").toString()), map.get("powerName").toString(), map.get("powerInfo").toString()).send();
             parserResult.setMessage("success");
             parserResult.setStatus(ParserResult.SUCCESS);

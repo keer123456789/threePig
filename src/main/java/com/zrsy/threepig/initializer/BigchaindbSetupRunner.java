@@ -11,7 +11,7 @@ import java.security.Security;
 /**
  * springboot启动，这个类也会启动，并且去连接BigchainDB节点
  */
-@Component
+//@Component
 public class BigchaindbSetupRunner implements CommandLineRunner {
     @Value("${blockchaindb.base-url}")
     private String baseUrl;

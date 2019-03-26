@@ -2,11 +2,13 @@ package com.zrsy.threepig.service.web.implement;
 
 import com.zrsy.threepig.Contract.RBAC.User;
 import com.zrsy.threepig.Util.ContractUtil;
+import com.zrsy.threepig.Util.EthereumUtil;
 import com.zrsy.threepig.domain.ParserResult;
 import com.zrsy.threepig.service.web.RoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.tuples.generated.Tuple3;
 
@@ -26,13 +28,20 @@ public class RoleServiceImpl implements RoleService {
     @Autowired
     ContractUtil contractUtil;
 
+    @Autowired
+    EthereumUtil ethereumUtil;
+
+    @Value("${account_address}")
+    private String root_address;
+
     @Override
     public ParserResult addRole(Map map) {
         ParserResult parserResult = new ParserResult();
         User user = contractUtil.UserLoad();
         String a = map.get("roleId").toString();
-
         try {
+
+            ethereumUtil.UnlockAccount(root_address,"11111111");
             user.createRole(new BigInteger(a), map.get("roleFName").toString(), map.get("roleName").toString()).send();
         } catch (Exception e) {
             e.printStackTrace();

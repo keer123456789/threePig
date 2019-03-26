@@ -65,15 +65,27 @@ public class KeyPairHolder {
      * @param keyPair
      */
     public static void SaveKeyPairToTXT(KeyPair keyPair) {
+        SaveKeyPairToTXT(keyPair,keyPath);
+    }
+
+    /**
+     * 写秘钥到指定路径
+     * @param keyPair
+     * @param path
+     * @return
+     */
+    public static boolean SaveKeyPairToTXT(KeyPair keyPair,String path) {
         try {
-            logger.info("开始写密钥到" + keyPath);
-            FileOutputStream fos = new FileOutputStream(keyPath);
+            logger.info("开始写密钥到" + path);
+            FileOutputStream fos = new FileOutputStream(path);
             fos.write(KeyPairUtils.encodePrivateKeyBase64(keyPair).getBytes());
             fos.close();
             logger.info("写密钥成功");
+            return true;
         } catch (Exception e) {
             logger.error("写密钥失败");
             e.printStackTrace();
+            return false;
         }
 
     }

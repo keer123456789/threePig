@@ -12,43 +12,43 @@ import java.io.*;
  * 工具类
  * 实现远程操作linux服务器
  */
+@Component
 public class SSHUtil {
     protected static final Logger logger = LoggerFactory.getLogger(SSHUtil.class);
 
     @Value("${ssh_ip}")
-    private  String ip ;
-    @Value("${userName}")
-    private  String userName;
+    private String ip;
+
+    private String ssh_userName=PropertyUtil.getProperties("userName");
     @Value("${userPassward}")
-    private  String password;
+    private String ssh_password;
 
     private static String DEFAULTCHARTSET = "UTF-8";
     private static Connection conn;
 
     /**
      * 登录服务器
+     *
      * @return
      */
-    private boolean login(){
-        conn = new Connection("192.168.85.134");
+    public boolean login() {
+        conn = new Connection(ip);
         try {
             //连接远程服务器
             conn.connect();
             //使用用户名和密码登录
-            if(conn.authenticateWithPassword("root", "root")){
-                logger.info("用户%s密码%s登录服务器%s成功！", userName, password, ip);
+            if (conn.authenticateWithPassword(ssh_userName, ssh_password)) {
+                logger.info("用户%s密码%s登录服务器%s成功！", ssh_userName, ssh_password, ip);
                 return true;
-            }
-            else{
-                logger.error("用户%s密码%s登录服务器%s失败！", userName, password, ip);
+            } else {
+                logger.error("用户%s密码%s登录服务器%s失败！", ssh_userName, ssh_password, ip);
                 return false;
             }
         } catch (IOException e) {
-            logger.error("用户%s密码%s登录服务器%s失败！", userName, password, ip);
+            logger.error("用户%s密码%s登录服务器%s失败！", ssh_userName, ssh_password, ip);
             e.printStackTrace();
             return false;
         }
-
 
 
     }
@@ -56,11 +56,11 @@ public class SSHUtil {
 
     /**
      * 上传文件
-     * @param conn
-     * @param fileName 本地文件
+     *
+     * @param fileName   本地文件
      * @param remotePath 服务器目录
      */
-    public void putFile(Connection conn, String fileName, String remotePath){
+    public void putFile(String fileName, String remotePath) {
         SCPClient sc = new SCPClient(conn);
         try {
             //将本地文件放到远程服务器指定目录下，默认的文件模式为 0600，即 rw，
@@ -73,21 +73,25 @@ public class SSHUtil {
 
     /**
      * 下载文件
-     * @param fileName 服务器文件
+     *
+     * @param fileName  服务器文件
      * @param localPath 本地地址
      */
-    public void copyFile( String fileName,String localPath){
+    public boolean copyFile(String fileName, String localPath) {
 
         SCPClient sc = new SCPClient(conn);
         try {
             sc.get(fileName, localPath);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
     /**
      * 执行shell脚本
+     *
      * @param cmd
      * @return
      */
@@ -111,10 +115,11 @@ public class SSHUtil {
 
     /**
      * 执行shell脚本
+     *
      * @param cmd
      * @return
      */
-    public static String executeSuccess(String cmd){
+    public static String executeSuccess(String cmd) {
         String result = "";
         try {
             Session session = conn.openSession();// 打开一个会话
@@ -130,11 +135,12 @@ public class SSHUtil {
 
     /**
      * 处理脚本执行返回结果
+     *
      * @param in
      * @param charset
      * @return
      */
-    private static String processStdout(InputStream in, String charset){
+    private static String processStdout(InputStream in, String charset) {
         InputStream stdout = new StreamGobbler(in);
         StringBuffer buffer = new StringBuffer();
         try {
@@ -151,22 +157,19 @@ public class SSHUtil {
         return buffer.toString();
     }
 
-    public void closeConn(){
+    public void closeConn() {
         conn.close();
     }
 
 
-
-
-
     public static void main(String[] args) {
-        SSHUtil sshUtil=new SSHUtil();
-        if(sshUtil.login());
-        String a=sshUtil.execute("ls -l /root/ethereum/node/data/keystore/*60de16ea63fc458b6701830ba81d5a502e896ab9");
-        String[] b=a.split("/");
-        a=b[b.length-1];
-        a=a.substring(0,a.length()-1);
+        SSHUtil sshUtil = new SSHUtil();
+        if (sshUtil.login()) ;
+        String a = sshUtil.execute("ls -l /root/ethereum/node/data/keystore/*60de16ea63fc458b6701830ba81d5a502e896ab9");
+        String[] b = a.split("/");
+        a = b[b.length - 1];
+        a = a.substring(0, a.length() - 1);
         logger.info(a);
-        sshUtil.copyFile("/root/ethereum/node/data/keystore/"+a,"./data");
+        sshUtil.copyFile("/root/ethereum/node/data/keystore/" + a, "./data");
     }
 }
