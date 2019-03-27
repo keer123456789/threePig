@@ -20,7 +20,7 @@ import java.nio.file.Files;
 import java.util.Map;
 
 /**
- * 用户管理
+ * 此类主要使用智能合约对系统内的用户管理
  */
 @RestController
 public class UserController {
@@ -38,38 +38,63 @@ public class UserController {
      */
     @PostMapping("/register")
     public ParserResult register(@RequestBody Map map){
+        logger.info("接收到用户注册请求！！！开始进行注册……");
         return userService.register((Map)map.get("data"));
     }
 
 
-
-
+    /**
+     *  登录系统，如果登录成功，将password，userid，address写进cookie，前端进行cookie判断。
+     * @param map
+     * @param response
+     * @return
+     * @throws IOException
+     */
     @PostMapping("/login")
     public ParserResult  login(@RequestBody Map map, HttpServletResponse response) throws IOException {
+        logger.info("接收到用户登录的请求！开始进行登录操作……");
         Map map1= (Map) map.get("data");
         ParserResult parserResult=userService.login(map1);
         if(parserResult.getStatus()==ParserResult.SUCCESS){
             Cookie cookie=new Cookie("userid",map1.get("account").toString());
             Cookie cookie1=new Cookie("password",map1.get("password").toString());
+            Cookie cookie2=new Cookie("address",map1.get("address").toString());
             response.addCookie(cookie);
             response.addCookie(cookie1);
+            response.addCookie(cookie2);
         }
         return parserResult;
     }
 
+    /**
+     * 管理员进行用户的提交审核，将信息写入智能合约，写入成功发送邮件通知，并将密钥同时附在邮件中
+     * @param map
+     * @return
+     */
     @PostMapping("/eroll")
     public ParserResult eroll(@RequestBody Map map){
+        logger.info("接收到管理员的提交审核的请求！开始提交审核……");
         return userService.eroll((Map)map.get("data"));
     }
 
+    /**
+     * 获得系统内所有的用户的信息
+     * @return
+     */
     @GetMapping("/getAllUser")
     public ParserResult getAllUser(){
+        logger.info("接收到获得所有用户信息的请求！开始获取……");
         return userService.getAllUser();
     }
 
+    /**
+     * 禁用该用户
+     * @param address
+     * @return
+     */
     @RequestMapping(value = "/banUser/{address}", method = RequestMethod.GET)
     public ParserResult banUser(@PathVariable String address){
-        logger.info(address);
+        logger.info("接收到管理员禁用用户的请求！开始禁用用户……");
         return userService.banUser(address);
     }
 

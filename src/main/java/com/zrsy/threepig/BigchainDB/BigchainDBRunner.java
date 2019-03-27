@@ -18,7 +18,7 @@ public class BigchainDBRunner {
     //获取配置文件的BigchainDB的url
 
 
-    private static String url = PropertyUtil.getProperties("url");
+    private static String url = PropertyUtil.getProperties("BigchainDB_url");
 
     /**
      * 连接BigchainDB
@@ -31,6 +31,11 @@ public class BigchainDBRunner {
         logger.info("与节点：" + url + ",连接成功");
     }
 
+    /**
+     * 连接给定地址的BigchainDB节点
+     * @param url
+     * @return
+     */
     public static boolean StartConn(String url) {
 
         BigchainDbConfigBuilder

@@ -27,6 +27,7 @@ public class PigServiceImpl implements PigService {
     public ParserResult addPig(Map info) {
         ParserResult parserResult = new ParserResult();
         BigchainDBData bigchainDBData = new BigchainDBData("pigInfo", info);
+        logger.info("要增加的猪舍的信息   "+info.toString());
         String assetID;
         try {
             assetID = BigchainDBUtil.createAsset(bigchainDBData);
@@ -51,11 +52,11 @@ public class PigServiceImpl implements PigService {
     @Override
     public ParserResult getAllPig() {
         ParserResult parserResult = new ParserResult();
+        logger.info("使用BDQL开始查询，BDQL语句：select * from pigInfo");
         parserResult = BDQLUtil.work("select * from pigInfo");
         Table table = (Table) parserResult.getData();
-
+        logger.info("查询结果："+table.toString());
         parserResult.setData(table.getData());
-        logger.info(parserResult.getData().toString());
         return parserResult;
     }
 
@@ -67,8 +68,10 @@ public class PigServiceImpl implements PigService {
     @Override
     public ParserResult getPigInfo(String earId) {
         ParserResult parserResult =new ParserResult();
+        logger.info("使用BDQL开始查询，BDQL语句：select * from pigInfo where earId ="+earId);
         parserResult=BDQLUtil.work("select * from pigInfo where earId ="+earId);
         Table table = (Table)parserResult.getData();
+        logger.info("查询结果："+table.toString());
         parserResult.setData(table.getData());
         logger.info(parserResult.getData().toString());
         return parserResult;
@@ -82,8 +85,10 @@ public class PigServiceImpl implements PigService {
      */
     @Override
     public ParserResult getPigList(String pigHouseId) {
+        logger.info("使用BDQL开始查询，BDQL语句：select earId,breed,column,ringNumber,matingWeek,remarks from pigInfo where pigstyId ="+pigHouseId);
         ParserResult parserResult=BDQLUtil.work("select earId,breed,column,ringNumber,matingWeek,remarks from pigInfo where pigstyId ="+pigHouseId);
         Table table = (Table)parserResult.getData();
+        logger.info("查询结果："+table.toString());
         parserResult.setData(table.getData());
         logger.info(parserResult.getData().toString());
         return parserResult;

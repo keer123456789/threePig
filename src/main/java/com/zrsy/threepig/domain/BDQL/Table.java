@@ -300,6 +300,10 @@ public class Table {
         return pattern.matcher(str).matches();
     }
 
+    public String toString(){
+        return "{tableName:"+tableName+",type:"+type+",columnName:"+columnName.toString()+",data:"+data.toString()+"}";
+    }
+
     public static void main(String[] args) throws IOException {
         String a = "dfasdf";
         int b = Integer.parseInt(a);

@@ -26,17 +26,25 @@ import java.util.Map;
 public class PowerServiceImpl implements PowerService {
     protected static final Logger logger = LoggerFactory.getLogger(PowerServiceImpl.class);
 
+    /**
+     * 智能合约工具类
+     */
     @Autowired
     ContractUtil contractUtil;
 
+    /**
+     * 以太坊geth客户端工具类
+     */
     @Autowired
     EthereumUtil ethereumUtil;
-
+    /**
+     * 管理员账户
+     */
     @Value("${account_address}")
     private String root_address;
 
     /**
-     * 增加权限
+     * 增加权限，需要先解锁管理员的账户，然后调用智能合约
      *
      * @param map
      * @return
@@ -44,6 +52,7 @@ public class PowerServiceImpl implements PowerService {
     @Override
     public ParserResult addPower(Map map) {
         ParserResult parserResult = new ParserResult();
+        logger.info("需要增加的权限信息："+map);
         User user = contractUtil.UserLoad();
         try {
             ethereumUtil.UnlockAccount(root_address,"11111111");
@@ -114,6 +123,7 @@ public class PowerServiceImpl implements PowerService {
      */
     @Override
     public ParserResult fixPower(Map map) {
+        logger.info("开始修改权限信息，信息："+map);
         ParserResult parserResult = new ParserResult();
         User user = contractUtil.UserLoad();
         try {
@@ -146,6 +156,7 @@ public class PowerServiceImpl implements PowerService {
      */
     @Override
     public ParserResult deletePower(String powerId) {
+        logger.info("开始禁用权限id为"+powerId+"信息！！");
         ParserResult parserResult=new ParserResult();
         User user = contractUtil.UserLoad();
         try {
@@ -169,6 +180,7 @@ public class PowerServiceImpl implements PowerService {
      */
     @Override
     public ParserResult getAllPowerId() {
+        logger.info("开始获取全部的权限ID！！");
         ParserResult parserResult=new ParserResult();
         User user = contractUtil.UserLoad();
         List<BigInteger> list=null;
@@ -176,6 +188,7 @@ public class PowerServiceImpl implements PowerService {
             list=user.getAllPowerID().send();
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error("获取全部权限ID失败");
             parserResult.setMessage("获取全部权限ID失败");
             parserResult.setStatus(ParserResult.ERROR);
             return parserResult;
@@ -183,7 +196,7 @@ public class PowerServiceImpl implements PowerService {
         parserResult.setStatus(ParserResult.SUCCESS);
         parserResult.setMessage("success");
         parserResult.setData(list);
-        logger.info(list.toString());
+        logger.info("获取全部ID信息，"+list.toString());
         return parserResult;
     }
 }

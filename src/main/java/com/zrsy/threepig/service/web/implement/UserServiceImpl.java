@@ -46,26 +46,31 @@ public class UserServiceImpl implements UserService {
     ContractUtil contractUtil;
 
     /**
-     * 提交申请
+     * 提交申请，1.在geth注册一个新用户，2.将geth中的秘钥复制到./keystore中 3.在智能合约中添加注册信息
      *
      * @param map
      * @return
      */
     @Override
     public ParserResult register(Map map) {
+        logger.info("用户开始注册！注册信息："+map.toString());
         ParserResult parserResult = new ParserResult();
         String password = map.get("passwd").toString();
         String address = ethereumUtil.createNewAccount(password);
+        logger.info("新用户地址："+address);
+        logger.info("开始获取秘钥");
         User user = contractUtil.UserLoad(address);
         if (downloadKeystore(address)) {
             try {
-
+                logger.info("开始进行转账！！");
                 if (ethereumUtil.sendTransaction(address)) {
+                    logger.info("对账户进行解锁！！");
                     ethereumUtil.UnlockAccount(address, password);
                     Thread.sleep(10000);
                     TransactionReceipt transactionReceipt = user.registerUser(map.get("username").toString(), map.get("email").toString()).send();
                     List<User.NewRegisterUserEventResponse> responses = user.getNewRegisterUserEvents(transactionReceipt);
                     if (responses.get(0).status.intValue() == 1) {
+                        logger.info("注册成功!!");
                         parserResult.setStatus(ParserResult.SUCCESS);
                         parserResult.setMessage("success");
                         return parserResult;
@@ -75,7 +80,8 @@ public class UserServiceImpl implements UserService {
                 e.printStackTrace();
             }
         }
-        parserResult.setMessage("提交申请失败！！");
+        logger.info("注册失败！！");
+        parserResult.setMessage("注册申请失败！！");
         parserResult.setStatus(ParserResult.ERROR);
         return parserResult;
 
@@ -119,24 +125,35 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public ParserResult login(Map map) {
+        logger.info("开始进行登录！！");
         ParserResult parserResult = new ParserResult();
+        logger.info("解锁账户！");
         if (ethereumUtil.UnlockAccount(map.get("address").toString(), map.get("password").toString())) {
             User user = contractUtil.UserLoad(map.get("address").toString());
             Tuple5<String, String, String, String, BigInteger> tuple5 = null;
             try {
                 tuple5 = user.getUserInfo(map.get("account").toString()).send();
             } catch (Exception e) {
+                logger.error("获取用户信息失败！！！");
                 parserResult.setStatus(ParserResult.ERROR);
                 parserResult.setMessage("fail");
                 return parserResult;
             }
+            logger.info("成功获取用户信息！！");
             String address = tuple5.getValue4();
             if (address.equals(map.get("address").toString())) {
+                logger.info("信息比较成功！！！登陆成功！！");
                 parserResult.setMessage("success");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 return parserResult;
+            }else{
+                logger.error("信息不正确！！登录失败");
+                parserResult.setStatus(ParserResult.ERROR);
+                parserResult.setMessage("fail");
+                return parserResult;
             }
         }
+        logger.error("解锁账户失败！！");
         parserResult.setStatus(ParserResult.ERROR);
         parserResult.setMessage("fail");
         return parserResult;
@@ -170,7 +187,7 @@ public class UserServiceImpl implements UserService {
             return parserResult;
         }
 
-
+        logger.info("获取全部用户地址成功");
         List<Map> result = new ArrayList<>();
         for (String address : addressList) {
             Map map = new HashMap();
@@ -204,9 +221,11 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public ParserResult eroll(Map map) {
+        logger.info("开始提交用户申请");
         ParserResult parserResult = new ParserResult();
         User user = contractUtil.UserLoad();
         TransactionReceipt receipt = null;
+        logger.info("开始解锁账户！");
         ethereumUtil.UnlockAccount();
         try {
             receipt = user.enroll(map.get("address").toString(), map.get("roleName").toString(), map.get("fName").toString()).send();
@@ -271,14 +290,17 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public ParserResult banUser(String address) {
+        logger.info("开始禁用用户！！！禁用用户地址："+address);
         ParserResult parserResult=new ParserResult();
         User user=contractUtil.UserLoad();
+        logger.info("管理员解锁账户");
         ethereumUtil.UnlockAccount();
         TransactionReceipt transactionReceipt= null;
         try {
             transactionReceipt = user.deleteUser(address).send();
         } catch (Exception e) {
             e.printStackTrace();
+
         }
         List<User.UserChangeEventResponse> responses = user.getUserChangeEvents(transactionReceipt);
         if(responses.get(0).status.intValue()==3){

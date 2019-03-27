@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * 此类主要是针对在BigchainDB存取猪的相关信息
+ */
 @RestController
 public class PigController {
     protected static final Logger logger = LoggerFactory.getLogger(PigController.class);

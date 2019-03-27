@@ -25,23 +25,38 @@ import java.util.Map;
 public class RoleServiceImpl implements RoleService {
     protected static final Logger logger = LoggerFactory.getLogger(RoleServiceImpl.class);
 
+    /**
+     * 智能合约工具类
+     */
     @Autowired
     ContractUtil contractUtil;
 
+    /**
+     * 以太坊geth工具类
+     */
     @Autowired
     EthereumUtil ethereumUtil;
 
+    /**
+     * 管理员地址
+     */
     @Value("${account_address}")
     private String root_address;
 
+    /**
+     * 增加角色
+     *
+     * @param map
+     * @return
+     */
     @Override
     public ParserResult addRole(Map map) {
         ParserResult parserResult = new ParserResult();
+        logger.info("开始增加角色！角色信息：" + map.toString());
         User user = contractUtil.UserLoad();
         String a = map.get("roleId").toString();
         try {
-
-            ethereumUtil.UnlockAccount(root_address,"11111111");
+            ethereumUtil.UnlockAccount(root_address, "11111111");
             user.createRole(new BigInteger(a), map.get("roleFName").toString(), map.get("roleName").toString()).send();
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,13 +65,20 @@ public class RoleServiceImpl implements RoleService {
             parserResult.setMessage("增加角色失败，角色信息：" + map.toString());
             return parserResult;
         }
+        logger.info("成功增加角色信息");
         parserResult.setMessage("success");
         parserResult.setStatus(ParserResult.SUCCESS);
         return parserResult;
     }
 
+    /**
+     * 获得全部信息 先查询角色个数，循环查出每个角色的详细信息
+     *
+     * @return
+     */
     @Override
     public ParserResult getAllRole() {
+        logger.info("开始获取全部角色信息");
         ParserResult parserResult = new ParserResult();
         User user = contractUtil.UserLoad();
         BigInteger count = null;
@@ -64,11 +86,12 @@ public class RoleServiceImpl implements RoleService {
             count = user.getRoleCount().send();
         } catch (Exception e) {
             e.printStackTrace();
+            logger.info("查询角色个数失败!!");
             parserResult.setStatus(ParserResult.ERROR);
             parserResult.setMessage("查询角色个数失败！！");
             return parserResult;
         }
-
+        logger.info("查询角色个数成功！" + count);
 
         List<Map> list = new ArrayList<>();
         int sum = count.intValue();
@@ -102,7 +125,7 @@ public class RoleServiceImpl implements RoleService {
 
             list.add(result);
         }
-        logger.info(list.toString());
+        logger.info("获取角色信息成功!" + list.toString());
         parserResult.setMessage("获取全部角色信息成功！");
         parserResult.setStatus(ParserResult.SUCCESS);
         parserResult.setData(list);
@@ -110,17 +133,32 @@ public class RoleServiceImpl implements RoleService {
     }
 
 
+    /**
+     * 改变角色的权限和上级角色 角色权限现在只能增加，不能减少
+     *
+     * @param map
+     * @return
+     */
     @Override
     public ParserResult changeRolePowerAndFName(Map map) {
         ParserResult parserResult = new ParserResult();
+        logger.info("开始修改角色信息！修改信息：" + map.toString());
         User user = contractUtil.UserLoad();
-        try {
-            user.changeRoleIdAndFNameId(map.get("roleName").toString(), new BigInteger(map.get("roleId").toString()), map.get("fName").toString()).send();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (ethereumUtil.UnlockAccount()) {
+            try {
+                user.changeRoleIdAndFNameId(map.get("roleName").toString(), new BigInteger(map.get("roleId").toString()), map.get("fName").toString()).send();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("修改角色信息失败！！" + map);
+                parserResult.setStatus(ParserResult.ERROR);
+                parserResult.setMessage("error");
+            }
+        }else{
+            logger.error("管理员解锁失败");
             parserResult.setStatus(ParserResult.ERROR);
-            parserResult.setMessage("error");
+            parserResult.setMessage("管理员解锁失败");
         }
+        logger.info("修改角色信息成功！！");
         parserResult.setMessage("success");
         parserResult.setStatus(ParserResult.SUCCESS);
         return parserResult;

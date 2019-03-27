@@ -28,10 +28,12 @@ public class PigHouseServiceImpl implements PigHouseService {
     public ParserResult addPigHouse(Map map) {
         ParserResult parserResult = new ParserResult();
         BigchainDBData bigchainDBData = new BigchainDBData("pigHouseInfo", map);
+        logger.info("要增加的猪舍的信息   "+map.toString());
         String assetID;
         try {
             assetID = BigchainDBUtil.createAsset(bigchainDBData);
         } catch (Exception e) {
+            logger.error("增加猪舍信息失败！信息："+map.toString());
             parserResult.setStatus(ParserResult.ERROR);
             parserResult.setMessage("error");
             e.printStackTrace();
@@ -52,8 +54,10 @@ public class PigHouseServiceImpl implements PigHouseService {
     @Override
     public ParserResult getPigHouseList() {
         ParserResult parserResult = new ParserResult();
+        logger.info("使用BDQL开始查询，BDQL语句：select * from pigHouseInfo");
         parserResult = BDQLUtil.work("select * from pigHouseInfo");
         Table table = (Table) parserResult.getData();
+        logger.info("查询结果："+table.toString());
         parserResult.setData(table.getData());
         logger.info(parserResult.getData().toString());
         return parserResult;
@@ -66,15 +70,18 @@ public class PigHouseServiceImpl implements PigHouseService {
     @Override
     public ParserResult getPigHouseIDList() {
         ParserResult parserResult = new ParserResult();
+        logger.info("使用BDQL开始查询，BDQL语句：select pigstyId from pigHouseInfo");
         parserResult = BDQLUtil.work("select pigstyId from pigHouseInfo");
         Table table = (Table) parserResult.getData();
+        logger.info("查询结果："+table.toString());
+        logger.info("开始进行数据处理……");
         List<Map> list=table.getData();
         List<String> list1=new ArrayList<>();
         for(Map map:list){
             list1.add(map.get("pigstyId").toString().substring(0,4));
         }
         parserResult.setData(list1);
-        logger.info(parserResult.getData().toString());
+        logger.info("处理结果："+parserResult.getData().toString());
         return parserResult;
     }
 

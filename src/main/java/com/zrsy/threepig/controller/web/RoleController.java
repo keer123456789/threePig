@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * 角色管理
+ * 此类主要是对系统内角色使用智能合约进行管理
  */
 @RestController
 public class RoleController {

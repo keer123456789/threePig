@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 权限管理
+ * 此类主要是进行系统的权限管理，通过智能合约控制住
  */
 @RestController
 public class PowerController {

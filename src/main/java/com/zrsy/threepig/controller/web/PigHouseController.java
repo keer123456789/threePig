@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * 此类主要是BigchainDB上的存取猪舍的相关信息
+ */
 @RestController
 public class PigHouseController {
 
