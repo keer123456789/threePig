@@ -8,9 +8,7 @@ import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 
 import org.web3j.protocol.admin.Admin;
-import org.web3j.protocol.admin.JsonRpc2_0Admin;
 import org.web3j.protocol.admin.methods.response.NewAccountIdentifier;
-import org.web3j.protocol.core.Request;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.ClientTransactionManager;
 import org.web3j.tx.TransactionManager;

@@ -148,7 +148,7 @@ contract pigBase is pigAccessControl{
     using SafeMath for uint256;
 
     //只要新的猪出现，就会触发Birth事件。
-    event Birth(uint256 pigID, address owner, uint64 birthTime, uint256 breed, uint256 weight,  uint256 id,int8 status);
+    event Birth(uint256 pigID, address owner, uint64 birthTime, uint256 breed,  uint256 id,int8 status);
     //每次转移猪所有权时都会触发。
     event Transfer(address from, address to, uint256 tokenId, int8 status);
 
@@ -162,12 +162,12 @@ contract pigBase is pigAccessControl{
         uint64 birthTime;
         //品种
         uint256 breed;
-        //体重
-        uint256 weight;
         //bigchaindb 中的的721ID
         uint256 id;
-        // 状态   0：代售 1：确认购买  2：已发货 3：已收货 4：不能购买
+        // 状态   0：代售 1：确认购买  2：已发货 3：已收货
         int8 status;
+        //猪舍
+        int8 pigHouse;
     }
 
     //包含现有所有pig结构的数组,每只pig的ID是此数组的索引。
@@ -197,29 +197,27 @@ contract pigBase is pigAccessControl{
      */
     function createPig (
         uint256 _breed,
-        uint256 _weight,
-        uint256 _id
+        uint256 _id,
+        int8 _pigHouse
     ) external returns (uint256) {
-        for(int8 i = 0; i <= 9; i++){
-            pig memory i = pig({
-                currentAddress : msg.sender,
-                birthTime : uint64(now),
-                breed : _breed,
-                weight : _weight,
-                id : _id,
-                status : 0
-                });
+        pig memory _pig = pig({
+            currentAddress : msg.sender,
+            birthTime : uint64(now),
+            breed : _breed,
+            id : _id,
+            status : 0,
+            pigHouse : _pigHouse
+            });
 
-            uint256 newPigID = pigs.push(i) - 1;
+        uint256 newPigID = pigs.push(_pig) - 1;
 
-            // 发出Birth事件
-            emit Birth(newPigID, msg.sender,uint64(now), _breed, _weight, _id,0);
+        // 发出Birth事件
+        emit Birth(newPigID, msg.sender,uint64(now), _breed, _id,0);
 
-            // 设置主人，并且发出Transfer事件
-            // 遵循ERC721草案
-            _transfer(address(0), msg.sender, newPigID);
-            emit Transfer(address(0), msg.sender, newPigID, i.status);
-        }
+        // 设置主人，并且发出Transfer事件
+        // 遵循ERC721草案
+        _transfer(address(0), msg.sender, newPigID);
+        emit Transfer(address(0), msg.sender, newPigID, _pig.status);
 
     }
 }
@@ -357,19 +355,28 @@ contract pigCoreTest is pigOwnership{
         address currentAddress,
         uint64 birthTime,
         uint256 breed,
-        uint256 weight,
         uint256 id,
-        int8 status
+        int8 status,
+        int8 pigHouse
     ){
 
         pig storage Pig = pigs[_id];
         currentAddress = address(Pig.currentAddress);
         birthTime = uint64(Pig.birthTime);
         breed  = uint256(Pig.breed);
-        weight = uint256(Pig.weight);
         id  = uint256(Pig.id);
         status = int8(Pig.status);
+        pigHouse = int8(Pig.pigHouse);
 
+    }
+
+    function getBalanceOf(address _owner)public view returns (uint256){
+        return _owner.balance;
+    }
+
+
+    function getAddress()public view returns (address){
+        return msg.sender;
     }
 
 }

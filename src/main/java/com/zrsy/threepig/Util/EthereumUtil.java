@@ -2,6 +2,9 @@ package com.zrsy.threepig.Util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.web3j.crypto.CipherException;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.admin.methods.response.NewAccountIdentifier;
 import org.web3j.protocol.admin.methods.response.PersonalListAccounts;
@@ -75,6 +78,9 @@ public class EthereumUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(personalUnlockAccount.accountUnlocked()==null){
+            return true;
+        }
         return personalUnlockAccount.accountUnlocked();
     }
 
@@ -115,8 +121,9 @@ public class EthereumUtil {
         }
     }
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws IOException, CipherException {
+        Credentials credentials = WalletUtils.loadCredentials("12345678", "keystore/0x4f35ae6c01aff6b750c1ff6a0404e40a348ca6dd/UTC--2019-03-26T08-59-55.561386305Z--4f35ae6c01aff6b750c1ff6a0404e40a348ca6dd");
+        System.out.println(credentials.getAddress());
     }
 
 }
