@@ -1,15 +1,21 @@
 package com.zrsy.threepig.Util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
+import org.web3j.protocol.Web3j;
 import org.web3j.protocol.admin.Admin;
 import org.web3j.protocol.admin.methods.response.NewAccountIdentifier;
 import org.web3j.protocol.admin.methods.response.PersonalListAccounts;
 import org.web3j.protocol.admin.methods.response.PersonalUnlockAccount;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.JsonRpc2_0Web3j;
 import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.EthGetBalance;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.gas.DefaultGasProvider;
@@ -30,6 +36,7 @@ public class EthereumUtil {
     @Value("${account_address}")
     private String from;
 
+    private Logger logger= LoggerFactory.getLogger(EthereumUtil.class);
     /**
      * 创建新用户
      *
@@ -84,6 +91,10 @@ public class EthereumUtil {
         return personalUnlockAccount.accountUnlocked();
     }
 
+    /**
+     * 解锁管理员账户
+     * @return
+     */
     public Boolean UnlockAccount(){
         Admin web3j = Admin.build(new HttpService(web3_url));
         PersonalUnlockAccount personalUnlockAccount=null;
@@ -118,6 +129,24 @@ public class EthereumUtil {
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    /**
+     * 获取地址的余额
+     * @param address
+     * @return
+     */
+    public String  getBlance(String address){
+        Web3j web3j=new JsonRpc2_0Web3j(new HttpService(web3_url));
+        try {
+            EthGetBalance ethGetBalance=web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
+            logger.info("获取地址为："+address+"的余额成功，余额为："+ethGetBalance.getBalance().toString());
+            return ethGetBalance.getBalance().toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error("获取地址为"+address+"的余额失败！");
+            return null;
         }
     }
 
