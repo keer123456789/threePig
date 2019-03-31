@@ -17,8 +17,64 @@ public class TransactionController {
     @Autowired
     TransactionService transactionService;
 
+    /**
+     * 查询地址余额
+     * @param address
+     * @return
+     */
     @GetMapping("/getBalanceOf/{address}")
     public ParserResult getBanlanceOf(@PathVariable String address){
+       logger.info("接收到查询地址为"+address+"的余额请求！");
        return transactionService.getBanlanceOf(address);
+    }
+
+    /**
+     * 查询猪的信息
+     * @param earId
+     * @return
+     */
+    @GetMapping("/getPig/{earId}")
+    public ParserResult getPigInfo(@PathVariable String earId){
+        logger.info("接收到查询耳号为"+earId+"猪的信息的请求！！");
+        return transactionService.getPigInfo(earId);
+    }
+
+    /**
+     * 买家确认购买猪
+     * @param address 买家地址
+     * @param parameter 猪的721ID
+     * @return
+     */
+    @GetMapping("/confirmBuy/{address}/{721ID}")
+    public ParserResult confirmBuy(@PathVariable String address, @PathVariable("721ID") String parameter){
+        logger.info("接收到地址为"+address+"用户确认购买721ID为："+parameter+"猪的请求！！");
+        return transactionService.confirmBuy(address,parameter);
+    }
+
+    /**
+     * 卖家确认发货
+     * @param fromAddress 卖家地址
+     * @param toAddress 买家地址
+     * @param parameter 猪的721ID
+     *
+     * @return
+     */
+    @GetMapping("/tranfer/{fromAddress}/{toAddress}/{721ID}")
+    public ParserResult transfer(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter){
+        logger.info("接收到卖家确认购买的请求！！");
+        return transactionService.transfer(fromAddress,toAddress,parameter);
+    }
+
+    /**
+     * 买家确认收货
+     * @param fromAddress 买家地址
+     * @param toAddress 卖家地址
+     * @param parameter 猪的721ID
+     * @return
+     */
+    @GetMapping("/changestatus/{fromAddress}/{toAddress}/{721ID}")
+    public ParserResult changeStatus(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter){
+        logger.info("接收到买家确认收货的请求！！！");
+        return transactionService.changeStatus(fromAddress,toAddress,parameter);
     }
 }
