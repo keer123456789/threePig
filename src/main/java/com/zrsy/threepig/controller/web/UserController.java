@@ -55,14 +55,6 @@ public class UserController {
         logger.info("接收到用户登录的请求！开始进行登录操作……");
         Map map1= (Map) map.get("data");
         ParserResult parserResult=userService.login(map1);
-        if(parserResult.getStatus()==ParserResult.SUCCESS){
-            Cookie cookie=new Cookie("userid",map1.get("account").toString());
-            Cookie cookie1=new Cookie("password",map1.get("password").toString());
-            Cookie cookie2=new Cookie("address",map1.get("address").toString());
-            response.addCookie(cookie);
-            response.addCookie(cookie1);
-            response.addCookie(cookie2);
-        }
         return parserResult;
     }
 
