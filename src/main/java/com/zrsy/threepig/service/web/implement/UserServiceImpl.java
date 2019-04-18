@@ -10,9 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.tuples.generated.Tuple4;
 import org.web3j.tuples.generated.Tuple5;
 import org.web3j.tuples.generated.Tuple6;
+import org.web3j.utils.Convert;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -53,29 +53,32 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public ParserResult register(Map map) {
-        logger.info("用户开始注册！注册信息："+map.toString());
+        logger.info("用户开始注册！注册信息：" + map.toString());
         ParserResult parserResult = new ParserResult();
         String password = map.get("passwd").toString();
         String address = ethereumUtil.createNewAccount(password);
-        logger.info("新用户地址："+address);
+        logger.info("新用户地址：" + address);
         logger.info("开始获取秘钥");
-        User user = contractUtil.UserLoad(address);
+        User user = contractUtil.UserLoad();
+        User user1=contractUtil.UserLoad(address);
         if (downloadKeystore(address)) {
             try {
+                ethereumUtil.UnlockAccount();
                 logger.info("开始进行转账！！");
-                if (ethereumUtil.sendTransaction(address)) {
-                    logger.info("对账户进行解锁！！");
-                    ethereumUtil.UnlockAccount(address, password);
-                    Thread.sleep(10000);
-                    TransactionReceipt transactionReceipt = user.registerUser(map.get("username").toString(), map.get("email").toString()).send();
-                    List<User.NewRegisterUserEventResponse> responses = user.getNewRegisterUserEvents(transactionReceipt);
-                    if (responses.get(0).status.intValue() == 1) {
-                        logger.info("注册成功!!");
-                        parserResult.setStatus(ParserResult.SUCCESS);
-                        parserResult.setMessage("success");
-                        return parserResult;
-                    }
+                BigInteger value = Convert.toWei("100.0", Convert.Unit.ETHER).toBigInteger();
+                user.transfer(address,value).send();
+                logger.info("对账户进行解锁！！");
+                ethereumUtil.UnlockAccount(address, password);
+                Thread.sleep(10000);
+                TransactionReceipt transactionReceipt = user1.registerUser(map.get("username").toString(), map.get("email").toString()).send();
+                List<User.NewRegisterUserEventResponse> responses = user.getNewRegisterUserEvents(transactionReceipt);
+                if (responses.get(0).status.intValue() == 1) {
+                    logger.info("注册成功!!");
+                    parserResult.setStatus(ParserResult.SUCCESS);
+                    parserResult.setMessage("success");
+                    return parserResult;
                 }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -146,7 +149,7 @@ public class UserServiceImpl implements UserService {
                 parserResult.setMessage("success");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 return parserResult;
-            }else{
+            } else {
                 logger.error("信息不正确！！登录失败");
                 parserResult.setStatus(ParserResult.ERROR);
                 parserResult.setMessage("fail");
@@ -216,6 +219,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 提交用户申请
+     *
      * @param map
      * @return
      */
@@ -238,7 +242,7 @@ public class UserServiceImpl implements UserService {
         }
         List<User.UserChangeEventResponse> responses = user.getUserChangeEvents(receipt);
 
-        if (responses.get(0).status.intValue()==2) {
+        if (responses.get(0).status.intValue() == 2) {
             logger.info("提交注册申请成功！！信息：" + map.toString());
             logger.info("开始给用户回复邮件");
             if (sendEmail(map.get("address").toString())) {
@@ -285,17 +289,18 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 禁用用户
+     *
      * @param address
      * @return
      */
     @Override
     public ParserResult banUser(String address) {
-        logger.info("开始禁用用户！！！禁用用户地址："+address);
-        ParserResult parserResult=new ParserResult();
-        User user=contractUtil.UserLoad();
+        logger.info("开始禁用用户！！！禁用用户地址：" + address);
+        ParserResult parserResult = new ParserResult();
+        User user = contractUtil.UserLoad();
         logger.info("管理员解锁账户");
         ethereumUtil.UnlockAccount();
-        TransactionReceipt transactionReceipt= null;
+        TransactionReceipt transactionReceipt = null;
         try {
             transactionReceipt = user.deleteUser(address).send();
         } catch (Exception e) {
@@ -303,13 +308,13 @@ public class UserServiceImpl implements UserService {
 
         }
         List<User.UserChangeEventResponse> responses = user.getUserChangeEvents(transactionReceipt);
-        if(responses.get(0).status.intValue()==3){
-            logger.info("禁用用户成功！用户地址："+address);
+        if (responses.get(0).status.intValue() == 3) {
+            logger.info("禁用用户成功！用户地址：" + address);
             parserResult.setMessage("success");
             parserResult.setStatus(ParserResult.SUCCESS);
             return parserResult;
         }
-        logger.error("禁用用户失败！！用户地址："+address);
+        logger.error("禁用用户失败！！用户地址：" + address);
         parserResult.setStatus(ParserResult.ERROR);
         parserResult.setMessage("error");
         return parserResult;

@@ -42,6 +42,14 @@ public class PigController {
         return pigService.getAllPig();
     }
 
+    @PostMapping("/getPigERC721ID")
+    public ParserResult getPigERC721ID(@RequestBody Map map){
+        logger.info("接收到获得猪的721ID请求！*****开始获取");
+        return pigService.getPigERCID((Map) map.get("data"));
+    }
+
+
+
     /**
      * 获得该猪的详细信息
      *
@@ -65,6 +73,9 @@ public class PigController {
         logger.info("接收到获取猪舍号为：" + pigHouseId + "内的猪的信息列表请求！****开始获取。");
         return pigService.getPigList(pigHouseId);
     }
+
+
+
 
 
 }

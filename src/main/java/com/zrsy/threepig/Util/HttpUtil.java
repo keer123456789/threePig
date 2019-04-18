@@ -1,10 +1,15 @@
 package com.zrsy.threepig.Util;
 
+import com.alibaba.fastjson.JSON;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 封装了post，get的http请求类
@@ -84,7 +89,7 @@ public class HttpUtil {
     public static String httpPost(String url, String data) {
         String result = null;
         OkHttpClient httpClient = new OkHttpClient();
-        RequestBody requestBody = RequestBody.create(MediaType.parse("text/html;charset=utf-8"), data);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), data);
         Request request = new Request.Builder().url(url).post(requestBody).build();
         try {
             Response response = httpClient.newCall(request).execute();
@@ -93,6 +98,11 @@ public class HttpUtil {
             e.printStackTrace();
         }
         return result;
+    }
+
+
+    public static void main(String[] args) {
+
     }
 
 

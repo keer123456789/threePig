@@ -12,4 +12,7 @@ public interface PigService {
     ParserResult getPigInfo(String earId);
 
     ParserResult getPigList(String pigHouseId);
+
+    ParserResult getPigERCID(Map map);
+
 }

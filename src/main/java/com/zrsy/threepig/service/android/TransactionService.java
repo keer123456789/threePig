@@ -9,9 +9,11 @@ public interface TransactionService {
 
     ParserResult getPigInfo(String earId);
 
-    ParserResult confirmBuy(String address, String id);
+    ParserResult confirmBuy(String address, String id,String password);
 
-    ParserResult transfer(String fromAddress,String toAddress,String id);
+    ParserResult transfer(String fromAddress,String toAddress,String id,String password);
 
-    ParserResult changeStatus(String fromAddress,String toAddress,String id);
+    ParserResult changeStatus(String fromAddress,String toAddress,String id,String password);
+
+    ParserResult preSale(String earId,String address,String password);
 }

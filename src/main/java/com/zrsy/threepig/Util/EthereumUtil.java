@@ -1,5 +1,7 @@
 package com.zrsy.threepig.Util;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +11,7 @@ import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.admin.Admin;
+import org.web3j.protocol.admin.JsonRpc2_0Admin;
 import org.web3j.protocol.admin.methods.response.NewAccountIdentifier;
 import org.web3j.protocol.admin.methods.response.PersonalListAccounts;
 import org.web3j.protocol.admin.methods.response.PersonalUnlockAccount;
@@ -23,7 +26,10 @@ import org.web3j.utils.Convert;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 针对geth的personal接口的工具类
@@ -113,10 +119,10 @@ public class EthereumUtil {
      * @param to
      */
     public boolean sendTransaction(String to){
-        Admin web3j = Admin.build(new HttpService(web3_url));
+        Admin web3j = new JsonRpc2_0Admin(new HttpService(web3_url));
         UnlockAccount(from,"11111111");
-        BigInteger value = Convert.toWei("100.0", Convert.Unit.ETHER).toBigInteger();
-        Transaction transaction=  Transaction.createEtherTransaction(from,null,BigInteger.valueOf(1) ,BigInteger.valueOf(99999999),to,value);
+        BigInteger value = Convert.toWei("10.0", Convert.Unit.ETHER).toBigInteger();
+        Transaction transaction=  Transaction.createEtherTransaction(from,Transaction.DEFAULT_GAS,Transaction.DEFAULT_GAS ,Transaction.DEFAULT_GAS,to,value);
         try {
             EthSendTransaction ethSendTransaction=web3j.personalSendTransaction(transaction,"11111111").send();
             String hash=ethSendTransaction.getTransactionHash();
@@ -141,12 +147,54 @@ public class EthereumUtil {
         Web3j web3j=new JsonRpc2_0Web3j(new HttpService(web3_url));
         try {
             EthGetBalance ethGetBalance=web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
-            logger.info("获取地址为："+address+"的余额成功，余额为："+ethGetBalance.getBalance().toString());
-            return ethGetBalance.getBalance().toString();
+            BigInteger balance=ethGetBalance.getBalance();
+
+            balance=balance.divide(new BigInteger("1000000000000000000"));
+            logger.info("获取地址为："+address+"的余额成功，余额为："+balance);
+            return balance.toString();
         } catch (IOException e) {
             e.printStackTrace();
             logger.error("获取地址为"+address+"的余额失败！");
             return null;
+        }
+    }
+
+    /**
+     * 停止挖矿
+     * @return
+     */
+    public boolean minerStop(){
+        Map map=new HashMap<>();
+        map.put("jsonrpc","2.0");
+        map.put("method","miner_stop");
+        map.put("params",new ArrayList<>());
+        map.put("id",74);
+        String json= JSON.toJSONString(map);
+        String resp=HttpUtil.httpPost(web3_url,json);
+        Map map1= (Map) JSON.parse(resp);
+        return (boolean) map1.get("result");
+    }
+
+    /**
+     * 开始挖矿
+     * @return
+     */
+    public boolean minerStart(){
+        List list=new ArrayList();
+        list.add(1);
+        Map map=new HashMap<>();
+        map.put("jsonrpc","2.0");
+        map.put("method","miner_start");
+        map.put("params",list);
+        map.put("id",74);
+        String json= JSON.toJSONString(map);
+        String resp=HttpUtil.httpPost(web3_url,json);
+        Map map1= (Map) JSON.parse(resp);
+        if(!map1.containsValue("result")){
+            return true;
+        }
+        else{
+            return false;
         }
     }
 

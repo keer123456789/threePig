@@ -45,10 +45,16 @@ public class TransactionController {
      * @param parameter 猪的721ID
      * @return
      */
-    @GetMapping("/confirmBuy/{address}/{721ID}")
-    public ParserResult confirmBuy(@PathVariable String address, @PathVariable("721ID") String parameter){
+    @GetMapping("/confirmBuy/{address}/{721ID}/{password}")
+    public ParserResult confirmBuy(@PathVariable String address, @PathVariable("721ID") String parameter,@PathVariable String password){
         logger.info("接收到地址为"+address+"用户确认购买721ID为："+parameter+"猪的请求！！");
-        return transactionService.confirmBuy(address,parameter);
+        return transactionService.confirmBuy(address,parameter,password);
+    }
+
+    @GetMapping("/preSale/{tokenId}/{address}/{password}")
+    public ParserResult preSale(@PathVariable String tokenId, @PathVariable String address, @PathVariable String password){
+        logger.info("接收到代售请求！！！");
+        return transactionService.preSale(tokenId,address,password);
     }
 
     /**
@@ -59,10 +65,10 @@ public class TransactionController {
      *
      * @return
      */
-    @GetMapping("/tranfer/{fromAddress}/{toAddress}/{721ID}")
-    public ParserResult transfer(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter){
+    @GetMapping("/transfer/{fromAddress}/{toAddress}/{721ID}/{password}")
+    public ParserResult transfer(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter, @PathVariable String password){
         logger.info("接收到卖家确认购买的请求！！");
-        return transactionService.transfer(fromAddress,toAddress,parameter);
+        return transactionService.transfer(fromAddress,toAddress,parameter,password);
     }
 
     /**
@@ -72,9 +78,9 @@ public class TransactionController {
      * @param parameter 猪的721ID
      * @return
      */
-    @GetMapping("/changestatus/{fromAddress}/{toAddress}/{721ID}")
-    public ParserResult changeStatus(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter){
+    @GetMapping("/changeStatus/{fromAddress}/{toAddress}/{721ID}/{password}")
+    public ParserResult changeStatus(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter, @PathVariable String password){
         logger.info("接收到买家确认收货的请求！！！");
-        return transactionService.changeStatus(fromAddress,toAddress,parameter);
+        return transactionService.changeStatus(fromAddress,toAddress,parameter,password);
     }
 }

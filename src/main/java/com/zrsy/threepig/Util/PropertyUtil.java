@@ -29,11 +29,13 @@ public class PropertyUtil {
             logger.error("配置文件不存在");
             e.printStackTrace();
         }
+
         return prop.getProperty(name);
     }
 
+
     public static void main(String[] args) throws IOException {
-        System.out.println(getProperties("url"));
+
     }
 
 }
