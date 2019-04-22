@@ -5,10 +5,7 @@ import com.zrsy.threepig.service.web.PigHouseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -55,5 +52,12 @@ public class PigHouseController {
     public ParserResult getPighouseIDList() {
         logger.info("接收到获取所有猪舍号列表的请求！*****开始获取。");
         return pigHouseService.getPigHouseIDList();
+    }
+
+    @GetMapping("/getPigHouseEnv/{id}")
+    public ParserResult getPigHouseEnv(@PathVariable String id){
+        logger.info("");
+
+        return  pigHouseService.getPigHouseEnv(id);
     }
 }

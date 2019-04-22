@@ -10,4 +10,6 @@ public interface PigHouseService {
     ParserResult getPigHouseList();
 
     ParserResult getPigHouseIDList();
+
+    ParserResult getPigHouseEnv(String pigSty);
 }

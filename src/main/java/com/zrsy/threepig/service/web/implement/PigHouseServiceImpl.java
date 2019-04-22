@@ -85,5 +85,19 @@ public class PigHouseServiceImpl implements PigHouseService {
         return parserResult;
     }
 
+    /**
+     * 获得猪舍的环境信息
+     * @return
+     */
+    @Override
+    public ParserResult getPigHouseEnv(String pigSty) {
+        ParserResult result=new ParserResult();
+        result=BDQLUtil.work("select pigSty,CO2,temperature,humidity,time from Environment where pigSty="+pigSty);
+        Table table= (Table) result.getData();
+        result.setData(table.getData());
+        result.setMessage("hello");
+        result.setStatus(ParserResult.SUCCESS);
+        return result;
 
+    }
 }

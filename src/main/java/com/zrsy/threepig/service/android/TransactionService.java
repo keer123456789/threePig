@@ -16,4 +16,6 @@ public interface TransactionService {
     ParserResult changeStatus(String fromAddress,String toAddress,String id,String password);
 
     ParserResult preSale(String earId,String address,String password);
+
+    ParserResult getAllPig(String address);
 }

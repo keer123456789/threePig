@@ -16,6 +16,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.tuples.generated.Tuple6;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,6 +216,47 @@ public class TransactionServiceImpl implements TransactionService {
         parserResult.setStatus(ParserResult.ERROR);
         parserResult.setMessage("fail");
         return null;
+    }
+
+    @Override
+    public ParserResult getAllPig(String address) {
+        ParserResult parserResult = new ParserResult();
+        Pig pig = contractUtil.PigLoad();
+        List list = new ArrayList();
+        try {
+            list = pig.tokensOfOwner(address).send();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("查询地址："+address+"猪的id失败");
+            parserResult.setStatus(ParserResult.ERROR);
+            parserResult.setMessage("fail");
+            return parserResult;
+        }
+
+        List tableData=new ArrayList();
+
+        for (int i = 0; i < list.size(); i++) {
+            List row=new ArrayList();
+            Tuple6<String, BigInteger, String, BigInteger, BigInteger, BigInteger> tuple6=null;
+            try {
+                tuple6=pig.getPig(new BigInteger(list.get(i).toString())).send();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("查询tokenid为"+list.get(i).toString()+"失败");
+                continue;
+            }
+            row.add(list.get(i).toString());
+            row.add(tuple6.getValue4().toString());
+            row.add(tuple6.getValue3());
+            row.add(tuple6.getValue5().toString());
+            tableData.add(row);
+        }
+        logger.info(tableData.toString());
+        parserResult.setData(tableData);
+        parserResult.setMessage("success");
+        parserResult.setStatus(ParserResult.SUCCESS);
+        return parserResult;
+
     }
 
     public static void main(String[] args) {

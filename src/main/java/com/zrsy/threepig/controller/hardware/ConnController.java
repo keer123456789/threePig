@@ -1,6 +1,7 @@
 package com.zrsy.threepig.controller.hardware;
 
 
+import com.zrsy.threepig.Util.HttpUtil;
 import com.zrsy.threepig.domain.ParserResult;
 import com.zrsy.threepig.service.hardware.IConnService;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,21 +25,25 @@ public class ConnController {
 
     private String raspberryIP = null;
 
-    private HashSet<String> nodeMcuIPs =new HashSet<>();
+    private String raspberryMac = null;
+
+    private HashSet<String> nodeMcuIPs = new HashSet<>();
 
     @Autowired
     IConnService connService;
 
     /**
      * 树莓派发来请求，设置ip
+     *
      * @param request
      * @return
      */
-    @GetMapping("/setRaspberryIP")
-    public boolean setRaspberryIP(HttpServletRequest request) {
+    @GetMapping("/setRaspberryIP/{mac}")
+    public boolean setRaspberryIP(HttpServletRequest request, @PathVariable String mac) {
         raspberryIP = getIpAddr(request);
+        raspberryMac = mac;
         if (!raspberryIP.equals(null)) {
-            logger.info( raspberryIP);
+            logger.info(raspberryIP);
             return true;
         } else {
             return false;
@@ -46,15 +52,16 @@ public class ConnController {
 
     /**
      * nodemcu请求服务器，获取ip，每次nodemcu最多可以3个
+     *
      * @param request
      * @return
      */
     @GetMapping("/setNodeMCUIP")
-    public boolean setNodeMCUIP(HttpServletRequest request){
-        if(nodeMcuIPs.size()>=3){
+    public boolean setNodeMCUIP(HttpServletRequest request) {
+        if (nodeMcuIPs.size() >= 3) {
             nodeMcuIPs.clear();
             return false;
-        }else{
+        } else {
             nodeMcuIPs.add(getIpAddr(request));
             logger.info(nodeMcuIPs.toString());
             return true;
@@ -64,35 +71,47 @@ public class ConnController {
 
     /**
      * nodemcu获取树莓派ip
+     *
      * @return
      */
     @GetMapping("/getRaspberryIP")
-    public String getRaspberryIP(){
+    public String getRaspberryIP() {
         return raspberryIP;
     }
 
 
     /**
      * 前端请求BigchainDB和变量中的树莓派信息
+     *
      * @return
      */
     @GetMapping("/getAllRaspberry")
-    public ParserResult getAllRaspberry(){
-        List list=connService.getAllRaspberry();
+    public ParserResult getAllRaspberry() {
+        List<Map> list = connService.getAllRaspberry();
+        if (raspberryIP!=null && raspberryMac!=null) {
+            Map map = new HashMap();
+            map.put("PiMac", raspberryMac);
+            map.put("PiIp", raspberryIP);
+            map.put("PiStatus", "未注册");
+            list.add(map);
+        }
 
-        return null;
+        ParserResult result = new ParserResult();
+        result.setStatus(ParserResult.SUCCESS);
+        result.setMessage("success");
+        result.setData(list);
+
+        return result;
     }
 
     /**
      * 前端获得当前内存中已经发来的nodemcuIP
+     *
      * @return
      */
     @GetMapping("/getNodeMcuIp")
-    public ParserResult getNodeMcuIp(){
+    public ParserResult getNodeMcuIp() {
         logger.info("获得nodemcuIp的请求………………");
-        nodeMcuIPs.add("192.168.1.102");
-        nodeMcuIPs.add("192.168.1.103");
-        nodeMcuIPs.add("192.168.1.104");
         ParserResult result = new ParserResult();
         result.setData(nodeMcuIPs);
         result.setMessage("success");
@@ -102,14 +121,24 @@ public class ConnController {
 
     /**
      * 前端发来请求，将资产信息发来，树莓派表 Raspberry
+     *
      * @param map
      * @return
      */
     @PostMapping("/createRaspberryAsset")
-    public ParserResult createRaspberryAsset(@RequestBody Map map){
+    public ParserResult createRaspberryAsset(@RequestBody Map map) {
         logger.info(map.toString());
-        map= (Map) map.get("data");
-        return connService.createRaspberryAsset(map);
+        map = (Map) map.get("data");
+        ParserResult parserResult=connService.createRaspberryAsset(map);
+        String resp=HttpUtil.httpGet("http://"+map.get("PiIp").toString()+":8080/isCreate/"+parserResult.getData().toString()+"/"+map.get("pigSty").toString());
+        if(resp.equals("success")){
+            logger.info("资产ID给树莓派发送成功");
+        }else {
+            logger.error("资产ID给树莓派发送失败！！ result："+resp);
+        }
+        raspberryMac = null;
+        raspberryIP =null;
+        return parserResult;
     }
 
 

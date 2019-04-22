@@ -7,7 +7,7 @@ import java.util.Map;
 
 public interface IConnService {
 
-    List getAllRaspberry();
+    List<Map> getAllRaspberry();
 
     ParserResult createRaspberryAsset(Map map);
 

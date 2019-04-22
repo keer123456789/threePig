@@ -157,7 +157,7 @@ public class Table {
         if (!(this.tableName.equals(null) && this.type.equals(null) && this.columnName.equals(null))) {
             for (MetaData metaData : metaDatas) {
                 Map map =  metaData.getMetadata();
-                map = (LinkedTreeMap) map.get("tableData");
+                map = (Map) map.get("tableData");
                 Map map1 = new HashMap();
                 for (String name : this.columnName) {
                     if (name.equals("TXID")) {

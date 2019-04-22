@@ -83,4 +83,10 @@ public class TransactionController {
         logger.info("接收到买家确认收货的请求！！！");
         return transactionService.changeStatus(fromAddress,toAddress,parameter,password);
     }
+
+    @GetMapping("/getAllPig/{address}")
+    public ParserResult getAllPig(@PathVariable String address){
+        logger.info("接收到获取合约中的全部猪的信息");
+        return transactionService.getAllPig(address);
+    }
 }
