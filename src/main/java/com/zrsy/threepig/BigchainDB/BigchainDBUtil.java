@@ -8,16 +8,21 @@ import com.bigchaindb.builders.BigchainDbTransactionBuilder;
 import com.bigchaindb.constants.BigchainDbApi;
 import com.bigchaindb.constants.Operations;
 
+
 import com.bigchaindb.model.*;
 import com.bigchaindb.util.NetworkUtils;
 import com.google.gson.JsonSyntaxException;
-import com.zrsy.threepig.BDQL.BDQLUtil;
+
+
+import com.zrsy.threepig.BigchainDB.KeyPairHolder;
+import com.zrsy.threepig.Util.HttpUtil;
 import com.zrsy.threepig.domain.BDQL.BigchainDBData;
 import com.zrsy.threepig.domain.BDQL.MetaData;
-import com.zrsy.threepig.domain.BDQL.Table;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +32,10 @@ import java.util.Map;
 
 public class BigchainDBUtil {
     private static Logger logger = LoggerFactory.getLogger(BigchainDBUtil.class);
+
+
+
+
 
 
     /**
@@ -64,6 +73,7 @@ public class BigchainDBUtil {
 
 
 
+
     /**
      * 给资产增加metadata信息
      * <p>
@@ -90,11 +100,13 @@ public class BigchainDBUtil {
                             KeyPairHolder.getPrivate())
                     .sendTransaction();
         } catch (Exception e) {
+            e.printStackTrace();
             logger.error("资产ID：" + assetId + ",不存在!!!!!!!");
             return null;
         }
         return transferTransaction.getId();
     }
+
 
     /**
      * 通过资产id获取最后交易输出
@@ -103,7 +115,7 @@ public class BigchainDBUtil {
      * @return
      * @throws IOException
      */
-    private static FulFill transferToSelfFulFill(String assetId) throws IOException {
+    private static FulFill transferToSelfFulFill(String assetId) throws IOException, InterruptedException {
         final FulFill spendFrom = new FulFill();
         String transactionId = getLastTransactionId(assetId);
         spendFrom.setTransactionId(transactionId);
@@ -118,8 +130,8 @@ public class BigchainDBUtil {
      * @return last transaction id
      * @throws IOException
      */
-    public static String getLastTransactionId(String assetId) throws IOException {
-        return getTransactionId(getLastTransaction(assetId));
+    public static String getLastTransactionId(String assetId) throws IOException, InterruptedException {
+        return getLastTransaction(assetId);
     }
 
     /**
@@ -129,13 +141,16 @@ public class BigchainDBUtil {
      * @return last transaction
      * @throws IOException
      */
-    public static Transaction getLastTransaction(String assetId) throws IOException {
-        List<Transaction> transfers = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER).getTransactions();
+    public static String  getLastTransaction(String assetId) throws IOException, InterruptedException {
+//        Transactions transactions = TransactionsApi.getTransactionsByAssetId(assetId, Operations.TRANSFER);
+//        List<Transaction> transfers=transactions.getTransactions();
+        String json= HttpUtil.httpGet(BigChainDBGlobals.getBaseUrl() + BigchainDbApi.TRANSACTIONS + "/?asset_id=" + assetId + "&operation=TRANSFER",50);
+        List<Transaction> transfers=JSON.parseArray(json,Transaction.class);
 
         if (transfers != null && transfers.size() > 0) {
-            return transfers.get(transfers.size() - 1);
+            return transfers.get(transfers.size() - 1).getId();
         } else {
-            return getCreateTransaction(assetId);
+            return assetId;
         }
     }
 
@@ -171,6 +186,7 @@ public class BigchainDBUtil {
     private static String getTransactionId(Transaction transaction) {
         String withQuotationId = transaction.getId();
         return withQuotationId.substring(1, withQuotationId.length() - 1);
+//        return transaction.getId();
     }
 
     /**
@@ -179,20 +195,20 @@ public class BigchainDBUtil {
      * @param txID
      * @return
      */
-    public static boolean checkTransactionExit(String txID) {
+    public  static boolean checkTransactionExit(String txID) {
         try {
             Thread.sleep(2000);
             Transaction transaction = TransactionsApi.getTransactionById(txID);
             Thread.sleep(2000);
-            if (transaction.getId() != null) {
+            if (!transaction.getId().equals(null)) {
                 logger.info("交易存在！！ID：" + txID);
                 return true;
             } else {
                 logger.info("交易不存在！！ID：" + txID);
-                return true;
+                return false;
             }
         } catch (Exception e) {
-            logger.info("未知错误！！！");
+            logger.error("未知错误！！！");
             e.printStackTrace();
             return false;
 
@@ -239,14 +255,6 @@ public class BigchainDBUtil {
      * @param key
      * @return
      */
-//    public static MetaDatas getMetaDatasByKey(String key){
-//        try {
-//            return MetaDataApi.getMetaData(key);
-//        } catch (IOException e) {
-//            logger.error("未知错误！！！！！！！");
-//            return null;
-//        }
-//    }
     public static List<MetaData> getMetaDatasByKey(String key) {
         logger.debug("getMetaData Call :" + key);
         Response response;
@@ -260,67 +268,22 @@ public class BigchainDBUtil {
             return null;
         }
 
-        return JSON.parseArray(body, MetaData.class);
+        return  JSON.parseArray(body, MetaData.class);
     }
 
-    public static Transaction getTransactionByTXID(String ID) {
-        logger.info("开始查询交易信息：TXID：" + ID);
+    public static Transaction getTransactionByTXID(String ID){
+        logger.info("开始查询交易信息：TXID："+ID);
         try {
             logger.info("查询成功！！！！！！");
             return TransactionsApi.getTransactionById(ID);
         } catch (IOException e) {
-            logger.error("交易不存在，TXID：" + ID);
+            logger.error("交易不存在，TXID："+ID);
             return null;
         }
     }
-//
-//    /**
-//     * 通过猪的id，类型查询交易id
-//     * @param pigId
-//     * @return
-//     */
-//    public static String getAssetId(String pigId,String type) {
-//        String id = null;
-//        try{
-//            List<Asset> assets = AssetsApi.getAssets(pigId).getAssets();
-//
-//            LinkedTreeMap linkedTreeMap;
-//            for(Asset asset : assets){
-//                linkedTreeMap= (LinkedTreeMap) asset.getData();
-//                if(linkedTreeMap.get("type").equals(type)){
-//                    id=asset.getId();
-//
-//                }
-//            }
-//        }catch(Exception e){
-//            return null;
-//        }
-//        return id;
-//
-//    }
+
 
     public static void main(String[] args) throws IOException {
 
-        BigchainDBRunner.StartConn();
-
-        Map<String, Table> result = null;
-        try {
-            result = BDQLUtil.getAlltablesByPubKey(KeyPairHolder.pubKeyToString(KeyPairHolder.getPublic()));
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-        Object[] columnNames = result.get("Person").getColumnName().toArray();
-        logger.info(String.valueOf(columnNames.length));
-        List<Map> data = result.get("Person").getData();
-        List<Object[]> objects = new ArrayList<Object[]>();
-        for (Map map : data) {
-            Collection va = map.values();
-
-            Object[] a = va.toArray();
-            objects.add(a);
-        }
-
-        Object[][] b = (Object[][]) objects.toArray(new Object[data.size()][columnNames.length]);
-        logger.info("hhhh");
     }
 }

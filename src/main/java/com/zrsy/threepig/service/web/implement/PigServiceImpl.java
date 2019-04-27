@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.math.BigInteger;
@@ -21,6 +22,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ public class PigServiceImpl implements PigService {
     @Autowired
     FileUtil fileUtil;
 
+
     /**
      * 增加新猪的信息
      *
@@ -47,7 +50,7 @@ public class PigServiceImpl implements PigService {
     public ParserResult addPig(Map info) {
         ParserResult parserResult = new ParserResult();
         BigchainDBData bigchainDBData = new BigchainDBData("pigInfo", info);
-        logger.info("要增加的猪舍的信息   " + info.toString());
+        logger.info("要增加的猪的信息   " + info.toString());
         String assetID;
         try {
             assetID = BigchainDBUtil.createAsset(bigchainDBData);
@@ -59,9 +62,31 @@ public class PigServiceImpl implements PigService {
         }
         logger.info("创建资产成功，资产ID：" + assetID);
         logger.info("添加新猪成功");
+        for(;true;){
+            if(BigchainDBUtil.checkTransactionExit(assetID)){
+                break;
+            }
+        }
+
+        // 制作status表
+        Map map = new HashMap();
+        map.put("earId", info.get("earId").toString());
+        map.put("tokenId", info.get("tokenId").toString());
+        map.put("statu", "0");
+
+        bigchainDBData = new BigchainDBData("pigStatus", map);
+        String txID = BigchainDBUtil.transferToSelf(bigchainDBData, assetID);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         parserResult.setStatus(ParserResult.SUCCESS);
         parserResult.setMessage("success");
         return parserResult;
+
+
     }
 
     /**
@@ -116,6 +141,12 @@ public class PigServiceImpl implements PigService {
         return parserResult;
     }
 
+    /**
+     * 合约创建猪，获得tokenID
+     *
+     * @param map
+     * @return
+     */
     @Override
     public ParserResult getPigERCID(Map map) {
         logger.info("开始在合约创建猪，并返回721id");
@@ -126,10 +157,10 @@ public class PigServiceImpl implements PigService {
             TransactionReceipt transactionReceipt = null;
             try {
 
-                transactionReceipt = pig.createPig(map.get("breed").toString(),new BigInteger(map.get("earId").toString()), new BigInteger(map.get("pigHouse").toString())).send();
+                transactionReceipt = pig.createPig(map.get("breed").toString(), new BigInteger(map.get("earId").toString()), new BigInteger(map.get("pigHouse").toString())).send();
                 List<Pig.Log_BirthEventResponse> responses = pig.getLog_BirthEvents(transactionReceipt);
                 int tokenId = responses.get(0).tokenId.intValue();
-                parserResult.setData(tokenId+"");
+                parserResult.setData(tokenId + "");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 parserResult.setMessage("success");
                 return parserResult;
@@ -142,7 +173,6 @@ public class PigServiceImpl implements PigService {
         parserResult.setMessage("fail");
         return parserResult;
     }
-
 
 
     public static void main(String[] args) throws UnknownHostException, SocketException {

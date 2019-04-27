@@ -3,6 +3,7 @@ package com.zrsy.threepig.service.android.implement;
 import com.zrsy.threepig.BDQL.BDQLUtil;
 import com.zrsy.threepig.BigchainDB.BigchainDBRunner;
 import com.zrsy.threepig.Contract.PIG.Pig;
+import com.zrsy.threepig.MiddleButton.MiddleButon;
 import com.zrsy.threepig.Util.ContractUtil;
 import com.zrsy.threepig.Util.EthereumUtil;
 import com.zrsy.threepig.domain.BDQL.Table;
@@ -30,6 +31,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     ContractUtil contractUtil;
+
+    @Autowired
+    MiddleButon middleButon;
 
 
     /**
@@ -95,6 +99,11 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public ParserResult confirmBuy(String address, String id, String password) {
+        try {
+            middleButon.work(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ParserResult parserResult = new ParserResult();
         Pig pig = contractUtil.PigLoad(address);
         TransactionReceipt receipt = null;
@@ -129,9 +138,13 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public ParserResult transfer(String fromAddress, String toAddress, String id, String password) {
+        try {
+            middleButon.work(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ParserResult parserResult = new ParserResult();
         Pig pig = contractUtil.PigLoad(fromAddress);
-
         TransactionReceipt receipt = null;
         if (ethereumUtil.UnlockAccount(fromAddress, password)) {
             try {
@@ -163,6 +176,11 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public ParserResult changeStatus(String fromAddress, String toAddress, String id, String password) {
+        try {
+            middleButon.work(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ParserResult parserResult = new ParserResult();
         Pig pig = contractUtil.PigLoad(fromAddress);
         TransactionReceipt receipt = null;
@@ -195,6 +213,11 @@ public class TransactionServiceImpl implements TransactionService {
      */
     @Override
     public ParserResult preSale(String tokenId, String address, String password) {
+        try {
+            middleButon.work(tokenId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ParserResult parserResult = new ParserResult();
         Pig pig = contractUtil.PigLoad(address);
         TransactionReceipt receipt = null;

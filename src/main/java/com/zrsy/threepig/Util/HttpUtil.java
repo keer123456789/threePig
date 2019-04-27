@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 封装了post，get的http请求类
@@ -60,15 +61,15 @@ public class HttpUtil {
     }
 
 
-    /**
-     * 发起get请求
-     *
-     * @param url
-     * @return
-     */
-    public static String httpGet(String url) {
+    public static String httpGet(String url,int a) {
         String result = null;
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+//                .retryOnConnectionFailure(true)
+                .connectTimeout(a, TimeUnit.SECONDS)//设置连接超时时间
+                .readTimeout(a, TimeUnit.SECONDS)//设置读取超时时间
+                .writeTimeout(a,TimeUnit.SECONDS)
+                .build();
+
         Request request = new Request.Builder().url(url).build();
         try {
             Response response = client.newCall(request).execute();
@@ -76,20 +77,31 @@ public class HttpUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return result;
+    }
+
+    /**
+     * 发起get请求
+     *
+     * @param url
+     * @return
+     */
+    public static String httpGet(String url) {
+        return httpGet(url,20);
     }
 
     /**
      * 发送httppost请求
      *
      * @param url
-     * @param data 提交的参数为key=value&key1=value1的形式
+     * @param data  提交的参数为key=value&key1=value1的形式
      * @return
      */
     public static String httpPost(String url, String data) {
         String result = null;
         OkHttpClient httpClient = new OkHttpClient();
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json;charset=utf-8"), data);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("text/html;charset=utf-8"), data);
         Request request = new Request.Builder().url(url).post(requestBody).build();
         try {
             Response response = httpClient.newCall(request).execute();
@@ -99,6 +111,7 @@ public class HttpUtil {
         }
         return result;
     }
+
 
 
     public static void main(String[] args) {
