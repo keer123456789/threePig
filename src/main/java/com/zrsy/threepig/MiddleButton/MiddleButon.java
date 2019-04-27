@@ -33,7 +33,7 @@ public class MiddleButon {
         Tuple6<String, BigInteger, String, BigInteger, BigInteger, BigInteger> tuple6= pig.getPig(new BigInteger(ID)).send();
         String ETH_status=tuple6.getValue5().toString();
 
-        ParserResult result=BDQLUtil.work("select * from pigStatus where earId='"+earId+"'");
+        ParserResult result=BDQLUtil.work("select * from pigStatus where earId="+earId);
 
         table = (Table) result.getData();
         int BD_status=0;
@@ -60,7 +60,7 @@ public class MiddleButon {
      * @throws InterruptedException
      */
     private boolean changeStatus(String earID,String tokeID,String EthStatus,String asserID) throws InterruptedException {
-        ParserResult parserResult=BDQLUtil.work("update pigStatus set earID="+earID+",erc721ID="+tokeID+",statu="+EthStatus+"where ID='"+asserID+"'");
+        ParserResult parserResult=BDQLUtil.work("update pigStatus set earID="+earID+",tokenId="+tokeID+",statu="+EthStatus+"where ID='"+asserID+"'");
         String TXID= (String) parserResult.getData();
         Thread.sleep(2000);
         if(BigchainDBUtil.checkTransactionExit(TXID)){

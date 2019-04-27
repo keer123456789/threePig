@@ -2,6 +2,7 @@ package com.zrsy.threepig.service.android.implement;
 
 import com.zrsy.threepig.BDQL.BDQLUtil;
 import com.zrsy.threepig.BigchainDB.BigchainDBRunner;
+import com.zrsy.threepig.BigchainDB.BigchainDBUtil;
 import com.zrsy.threepig.Contract.PIG.Pig;
 import com.zrsy.threepig.MiddleButton.MiddleButon;
 import com.zrsy.threepig.Util.ContractUtil;
@@ -117,6 +118,7 @@ public class TransactionServiceImpl implements TransactionService {
 
             if (list.get(0).tokenId.toString().equals(id) && list.get(0).status.intValue() == 2) {
                 logger.info("确认购买成功");
+                changeStatus(id,"2");
                 parserResult.setMessage("success");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 return parserResult;
@@ -155,6 +157,7 @@ public class TransactionServiceImpl implements TransactionService {
             List<Pig.Log_TransferEventResponse> list = pig.getLog_TransferEvents(receipt);
             if (id.equals(list.get(0).tokenId.toString()) && list.get(0).status.intValue() == 3) {
                 logger.info("确认发货成功");
+                changeStatus(id,"3");
                 parserResult.setMessage("success");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 return parserResult;
@@ -193,6 +196,8 @@ public class TransactionServiceImpl implements TransactionService {
             List<Pig.Log_ChangeStatusEventResponse> list = pig.getLog_ChangeStatusEvents(receipt);
             if (list.get(0).tokenId.toString().equals(id) && list.get(0).status.intValue() == 4) {
                 logger.info("确认收货成功");
+                changeStatus(id,"4");
+
                 parserResult.setMessage("success");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 return parserResult;
@@ -230,6 +235,7 @@ public class TransactionServiceImpl implements TransactionService {
             List<Pig.Log_PreSaleEventResponse> list = pig.getLog_PreSaleEvents(receipt);
             if (list.get(0).tokenId.toString().equals(tokenId) && list.get(0).status.intValue() == 1) {
                 logger.info("代售成功");
+                changeStatus(tokenId,"1");
                 parserResult.setMessage("success");
                 parserResult.setStatus(ParserResult.SUCCESS);
                 return parserResult;
@@ -279,6 +285,29 @@ public class TransactionServiceImpl implements TransactionService {
         parserResult.setMessage("success");
         parserResult.setStatus(ParserResult.SUCCESS);
         return parserResult;
+
+    }
+
+
+    /**
+     * 修改状态
+     * @param tokenId
+     * @param statu
+     * @return
+     */
+    private String changeStatus(String tokenId,String statu){
+       ParserResult parserResult= BDQLUtil.work("select * from pigInfo where tokenId="+tokenId);
+       Table table= (Table) parserResult.getData();
+       Map map=table.getData().get(0);
+       String earId=map.get("earId").toString();
+       String TXID=map.get("TXID").toString();
+       parserResult=BDQLUtil.work("update pigStatus set earId="+earId+",tokenId="+tokenId+",statu="+statu+"where ID='"+TXID+"'");
+       for(;true;){
+           if(BigchainDBUtil.checkTransactionExit(parserResult.getData().toString())){
+               break;
+           }
+       }
+       return parserResult.getData().toString();
 
     }
 

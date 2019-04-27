@@ -67,7 +67,7 @@ public class TransactionController {
      */
     @GetMapping("/transfer/{fromAddress}/{toAddress}/{721ID}/{password}")
     public ParserResult transfer(@PathVariable String fromAddress, @PathVariable String toAddress, @PathVariable("721ID") String parameter, @PathVariable String password){
-        logger.info("接收到卖家确认购买的请求！！");
+        logger.info("接收到卖家确认发货的请求！！");
         return transactionService.transfer(fromAddress,toAddress,parameter,password);
     }
 
