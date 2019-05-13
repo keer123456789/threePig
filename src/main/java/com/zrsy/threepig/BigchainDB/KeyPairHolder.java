@@ -35,6 +35,8 @@ public class KeyPairHolder {
         }
     }
 
+
+
     public static KeyPair getKeyPairFromString(String key) {
         try {
             return KeyPairUtils.decodeKeyPair(key);
@@ -64,8 +66,8 @@ public class KeyPairHolder {
      *
      * @param keyPair
      */
-    public static void SaveKeyPairToTXT(KeyPair keyPair) {
-        SaveKeyPairToTXT(keyPair,keyPath);
+    public static boolean SaveKeyPairToTXT(KeyPair keyPair) {
+        return SaveKeyPairToTXT(keyPair,keyPath);
     }
 
     /**
@@ -133,6 +135,24 @@ public class KeyPairHolder {
         logger.info("获得" + keyPath + "中的私钥");
         return (EdDSAPrivateKey) getKeyPairFromTXT().getPrivate();
     }
+
+    /**
+     * 通过字符串转换为BigchainDB密钥
+     * @param key
+     * @return
+     */
+    public static KeyPair getKeyPairByString(String key){
+        return KeyPairUtils.decodeKeyPair(key);
+    }
+//
+//    /**
+//     * 通过字符串过得公钥
+//     * @param key
+//     * @return
+//     */
+//    public static EdDSAPublicKey getPublic(String key){
+//        return (EdDSAPublicKey) getKeyPairByString(key).getPublic();
+//    }
 
     public static void main(String[] args) {
         logger.info(keyPath);

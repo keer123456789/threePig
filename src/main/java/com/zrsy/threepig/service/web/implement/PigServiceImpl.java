@@ -96,11 +96,19 @@ public class PigServiceImpl implements PigService {
      */
     @Override
     public ParserResult getAllPig() {
-        ParserResult parserResult = new ParserResult();
         logger.info("使用BDQL开始查询，BDQL语句：select * from pigInfo");
-        parserResult = BDQLUtil.work("select * from pigInfo");
+        ParserResult parserResult = BDQLUtil.work("select * from pigInfo");
         Table table = (Table) parserResult.getData();
         logger.info("查询结果：" + table.toString());
+
+
+//        for(int i=0;i<table.getData().size();i++) {
+//            Map map=table.getData().get(i);
+//            ParserResult result = BDQLUtil.work("select * from pigStatus where earId="+map.get("earId"));
+//            Table table1=result.getData().
+//        }
+
+
         parserResult.setData(table.getData());
         return parserResult;
     }
