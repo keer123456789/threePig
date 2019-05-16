@@ -99,16 +99,42 @@ public class PigServiceImpl implements PigService {
         logger.info("使用BDQL开始查询，BDQL语句：select * from pigInfo");
         ParserResult parserResult = BDQLUtil.work("select * from pigInfo");
         Table table = (Table) parserResult.getData();
+
+        //查询状态
+        ParserResult result=BDQLUtil.work("select * from pigStatus");
+        Table status= (Table) result.getData();
         logger.info("查询结果：" + table.toString());
 
 
-//        for(int i=0;i<table.getData().size();i++) {
-//            Map map=table.getData().get(i);
-//            ParserResult result = BDQLUtil.work("select * from pigStatus where earId="+map.get("earId"));
-//            Table table1=result.getData().
-//        }
+        for(int i=0;i<table.getData().size();i++) {
+            int maxStatus=0;
+            String earId=table.getData().get(i).get("earId").toString();
+            for(Map map:status.getData()){
+                if(map.get("earId").toString().equals(earId)){
+                    int a=Integer.parseInt(map.get("statu").toString());
+                    if(a>maxStatus){
+                        maxStatus=a;
+                    }
+                }
+            }
+            if (maxStatus == 0) {
+                table.getData().get(i).put("status", "饲养中");
+            }
+            if (maxStatus == 1) {
+                table.getData().get(i).put("status", "待售");
+            }
+            if (maxStatus == 2) {
+                table.getData().get(i).put("status", "已预订");
+            }
+            if (maxStatus == 3) {
+                table.getData().get(i).put("status", "已发货");
+            }
+            if (maxStatus == 4) {
+                table.getData().get(i).put("status", "已收货");
+            }
+        }
 
-
+        logger.info(table.getData().toString());
         parserResult.setData(table.getData());
         return parserResult;
     }

@@ -1,6 +1,7 @@
 package com.zrsy.threepig.controller.hardware;
 
 
+import com.zrsy.threepig.BigchainDB.KeyPairHolder;
 import com.zrsy.threepig.Util.HttpUtil;
 import com.zrsy.threepig.domain.ParserResult;
 import com.zrsy.threepig.service.hardware.IConnService;
@@ -78,6 +79,11 @@ public class ConnController {
     @GetMapping("/getRaspberryIP")
     public String getRaspberryIP() {
         return raspberryIP;
+    }
+
+    @GetMapping("/getDataKey")
+    public String getDataKey(){
+        return KeyPairHolder.getKeyPairFormTXT();
     }
 
 
