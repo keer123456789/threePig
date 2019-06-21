@@ -18,12 +18,21 @@ public class EnvController {
     @Autowired
     IEnvService envService;
 
+    /**
+     * 前端设置环境范围
+     * @param map
+     * @return
+     */
     @PostMapping("/setEnv")
     public ParserResult setEnv(@RequestBody Map map){
         logger.info("接收到设置环境范围的请求……");
         return envService.setEnv((Map)map.get("data"));
     }
 
+    /**
+     * 获取环境范围
+     * @return
+     */
     @GetMapping("/getEnv")
     public  ParserResult getEnv(){
         logger.info("接收到获取环境范围的请求………………");

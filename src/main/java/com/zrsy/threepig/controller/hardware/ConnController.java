@@ -8,6 +8,7 @@ import com.zrsy.threepig.service.hardware.IConnService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,20 +19,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * 接收树莓派和nodemcu的连接请求
+ */
 @RestController
 public class ConnController {
     protected static final Logger logger = LoggerFactory.getLogger(ConnController.class);
-    @Autowired
-    private ApplicationContext publisher;
-
+    //树莓派的ip地址
     private String raspberryIP = null;
-
+    //树莓派的MAC地址
     private String raspberryMac = null;
-
+    //nodemcu的IP地址
     private HashSet<String> nodeMcuIPs = new HashSet<>();
 
     @Autowired
     IConnService connService;
+    //树莓派连接的最大个数
+    @Value("${raspberryMaxConn}")
+    private int size;
 
     /**
      * 树莓派发来请求，设置ip
@@ -52,14 +58,14 @@ public class ConnController {
     }
 
     /**
-     * nodemcu请求服务器，获取ip，每次nodemcu最多可以3个
+     * nodemcu请求服务器，获取ip
      *
      * @param request
      * @return
      */
     @GetMapping("/setNodeMCUIP")
     public boolean setNodeMCUIP(HttpServletRequest request) {
-        if (nodeMcuIPs.size() >= 3) {
+        if (nodeMcuIPs.size() >= this.size) {
             nodeMcuIPs.clear();
             return false;
         } else {
@@ -81,6 +87,10 @@ public class ConnController {
         return raspberryIP;
     }
 
+    /**
+     * 树莓派获取BigchainDB的密钥
+     * @return 返回字符串 为./keypair.txt中的内容
+     */
     @GetMapping("/getDataKey")
     public String getDataKey(){
         return KeyPairHolder.getKeyPairFormTXT();
