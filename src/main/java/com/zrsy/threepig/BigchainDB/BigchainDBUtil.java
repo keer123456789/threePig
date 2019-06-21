@@ -30,13 +30,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ * 此类使用BigchainDB-driver做的封装类
+ * BDQL底层是调用的此类中的函数
+ */
+
 public class BigchainDBUtil {
     private static Logger logger = LoggerFactory.getLogger(BigchainDBUtil.class);
-
-
-
-
-
 
     /**
      * 创建资产数据，没有metadata数据
@@ -280,10 +281,5 @@ public class BigchainDBUtil {
             logger.error("交易不存在，TXID："+ID);
             return null;
         }
-    }
-
-
-    public static void main(String[] args) throws IOException {
-
     }
 }

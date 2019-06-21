@@ -1,19 +1,16 @@
 package com.zrsy.threepig.BDQL;
 
-import com.bigchaindb.model.Transaction;
-import com.bigchaindb.model.Transactions;
-import com.google.gson.internal.LinkedTreeMap;
-import com.zrsy.threepig.BigchainDB.BigchainDBUtil;
-import com.zrsy.threepig.domain.BDQL.Table;
+
 import com.zrsy.threepig.domain.ParserResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-
+/**
+ * 本类是BDQL的分析工作的开始和一些工具
+ *
+ * work方法是开始函数
+ */
 public class BDQLUtil {
     public static final int ONE = 1;
     public static final int TWO = 2;
@@ -83,7 +80,7 @@ public class BDQLUtil {
     }
 
     /**
-     * 开始解析BDQL  不出意外的话这个函数是第一个使用
+     * 开始解析BDQL不出意外的话这个函数是第一个使用
      *
      * @param sql
      * @return
@@ -95,63 +92,6 @@ public class BDQLUtil {
     }
 
 
-    /**
-     * 通过公钥获得全部表数据
-     *
-     * @param pubkey
-     * @return
-     * @throws IOException
-     */
-    public static Map<String, Table> getAlltablesByPubKey(String pubkey) throws IOException {
-
-        Map<String, Table> result = new HashMap<String, Table>();
 
 
-        Transactions transactions = BigchainDBUtil.getAllTransactionByPubKey(pubkey);
-        LinkedTreeMap map = new LinkedTreeMap();
-        for (Transaction transaction : transactions.getTransactions()) {
-            if (transaction.getOperation().equals("\"CREATE\"")) {
-                map = (LinkedTreeMap) transaction.getAsset().getData();
-                if (!result.containsKey(map.get("tableName"))) {
-                    Table table = new Table();
-                    table.setTableName(map.get("tableName").toString());
-                    table.setType("CREATE");
-                    table.setColumnName(transaction);
-//                    table.setRowData(transaction);
-                    result.put(table.getTableName(), table);
-                } else {
-                    Table table = result.get(map.get("tableName"));
-                    table.setColumnName(transaction);
-//                    table.setRowData(transaction);
-                    result.put(table.getTableName(), table);
-                }
-            } else {
-                map = (LinkedTreeMap) transaction.getMetaData();
-                if (!result.containsKey(map.get("tableName"))) {
-                    Table table = new Table();
-                    table.setTableName(map.get("tableName").toString());
-                    table.setType("TRANSFER");
-                    table.setColumnName(transaction);
-//                    table.setRowData(transaction);
-                    result.put(table.getTableName(), table);
-                } else {
-                    Table table = result.get(map.get("tableName"));
-                    table.setColumnName(transaction);
-//                    table.setRowData(transaction);
-                    result.put(table.getTableName(), table);
-                }
-            }
-        }
-
-
-        return result;
-    }
-
-
-    public static void main(String[] args) throws IOException {
-//        BigchainDBRunner.StartConn();
-//        Map<String,Table>a=new HashMap<String, Table>();
-//        a=getAlltablesByPubKey(KeyPairHolder.pubKeyToString(KeyPairHolder.getPublic()));
-//        logger.info(String.valueOf(a.size()));
-    }
 }

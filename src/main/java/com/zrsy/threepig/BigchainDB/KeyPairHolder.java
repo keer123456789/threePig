@@ -14,7 +14,9 @@ import java.io.FileOutputStream;
 import java.security.KeyPair;
 
 /**
- * BigchainDB秘钥的存放
+ * BigchainDB秘钥的存放获取的方法。
+ *
+ *
  */
 public class KeyPairHolder {
     private static Logger logger = LoggerFactory.getLogger(KeyPairHolder.class);
@@ -144,15 +146,6 @@ public class KeyPairHolder {
     public static KeyPair getKeyPairByString(String key){
         return KeyPairUtils.decodeKeyPair(key);
     }
-//
-//    /**
-//     * 通过字符串过得公钥
-//     * @param key
-//     * @return
-//     */
-//    public static EdDSAPublicKey getPublic(String key){
-//        return (EdDSAPublicKey) getKeyPairByString(key).getPublic();
-//    }
 
     public static void main(String[] args) {
         logger.info(keyPath);

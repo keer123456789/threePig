@@ -30,6 +30,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 
+
+/**
+ * 此类是进行SQL解析
+ */
 public class BDQLParser {
     private static Logger logger = LoggerFactory.getLogger(BDQLParser.class);
 

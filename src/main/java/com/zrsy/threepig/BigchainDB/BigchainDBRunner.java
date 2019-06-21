@@ -10,7 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 连接BigchainDB
+ * 连接BigchainDB使用的连接类
+ *
  */
 public class BigchainDBRunner {
     //日志输出
