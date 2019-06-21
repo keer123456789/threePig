@@ -45,7 +45,7 @@ contract ERC721 {
     function transfer(address _to, uint256 _tokenId) external;
 
     // Events
-    event Log_transfer(address from, address to, uint256 tokenId, int8 status);
+    event Transfer(address from, address to, uint256 tokenId, int8 status);
 
     function tokensOfOwner(address _owner) external view returns (uint256[] memory tokenIds);
 
@@ -145,12 +145,18 @@ contract pigAccessControl is Ownable{
 /// 定义pig是什么，定义了pig的基本属性
 contract pigBase is pigAccessControl{
 
-    using SafeMath for uint256;
+    //using SafeMath for uint256;
 
     //只要新的猪出现，就会触发Birth事件。
-    event Birth(uint256 pigID, address owner, uint64 birthTime, uint256 breed,  uint256 id,int8 status);
-    //每次转移猪所有权时都会触发。
-    event Transfer(address from, address to, uint256 tokenId, int8 status);
+    event Log_Birth(address from, address to, uint256 tokenId, int8 status);
+    //小猪状态变为代售时触发
+    event Log_PreSale(address from, address to, uint256 tokenId, int8 status);
+    //买家确认购买时触发
+    event Log_ConfirmBuy(address from, address to, uint256 tokenId, int8 status);
+    //卖家转移猪的所有权时触发
+    event Log_Transfer(address from, address to, uint256 tokenId, int8 status);
+    //买家确认收货时触发
+    event Log_ChangeStatus(address from, address to, uint256 tokenId, int8 status);
 
     /**
      * pig结构。
@@ -161,13 +167,15 @@ contract pigBase is pigAccessControl{
         //出生时间
         uint64 birthTime;
         //品种
-        uint256 breed;
+        string breed;
         //bigchaindb 中的的721ID
         uint256 id;
-        // 状态   0：代售 1：确认购买  2：已发货 3：已收货
+        // 状态   0：饲养(createPig) 1：代售(preSale)  2：确认购买(confirmBuy) 3：确认发货(transfer) 4：确认收货(changeStatus)
         int8 status;
         //猪舍
-        int8 pigHouse;
+        uint256 pigHouse;
+        //买家地址
+        address buyAddress;
     }
 
     //包含现有所有pig结构的数组,每只pig的ID是此数组的索引。
@@ -196,9 +204,9 @@ contract pigBase is pigAccessControl{
      * 将生成Birth事件和Transfer事件。
      */
     function createPig (
-        uint256 _breed,
+        string _breed,
         uint256 _id,
-        int8 _pigHouse
+        uint256 _pigHouse
     ) external returns (uint256) {
         pig memory _pig = pig({
             currentAddress : msg.sender,
@@ -206,18 +214,18 @@ contract pigBase is pigAccessControl{
             breed : _breed,
             id : _id,
             status : 0,
-            pigHouse : _pigHouse
+            pigHouse : _pigHouse,
+            buyAddress : address(0)
             });
 
         uint256 newPigID = pigs.push(_pig) - 1;
 
-        // 发出Birth事件
-        emit Birth(newPigID, msg.sender,uint64(now), _breed, _id,0);
-
         // 设置主人，并且发出Transfer事件
         // 遵循ERC721草案
+        // 发出Birth事件
         _transfer(address(0), msg.sender, newPigID);
-        emit Transfer(address(0), msg.sender, newPigID, _pig.status);
+        emit Log_Birth(address(0), msg.sender, newPigID, _pig.status);
+        return newPigID;
 
     }
 }
@@ -225,7 +233,7 @@ contract pigBase is pigAccessControl{
 /// 合约继承自KittyBase和ERC721实现了ERC721接口中定义的方法。定义了整个合约的名称和单位
 contract pigOwnership is pigBase,ERC721{
 
-    using SafeMath for uint256;
+    //using SafeMath for uint256;
 
     //基于ERC721，Name和symbol都是不可分割的Token
     string public constant name = "Pig’s Life";
@@ -263,38 +271,45 @@ contract pigOwnership is pigBase,ERC721{
         return ownershipTokenCount[_owner];
     }
 
-    //买家确认购买，并转钱 0-1
-    function confirmBuy(uint256 _tokenId)external payable {
+    //卖家将小猪状态改为代售 0-1
+    function preSale(uint256 _tokenId)external{
         require(pigs[_tokenId].status == 0);
         pigs[_tokenId].status = 1;
-        emit Transfer(msg.sender, address(this), _tokenId, pigs[_tokenId].status);
+        emit Log_PreSale(msg.sender, address(this), _tokenId, pigs[_tokenId].status);
     }
 
-    //把猪转到另一个地址，要确保ERC-721兼容，否则可能丢失。1-2
+    //买家确认购买，并转钱 1-2
+    function confirmBuy(uint256 _tokenId)external payable {
+        require(pigs[_tokenId].status == 1);
+        pigs[_tokenId].status = 2;
+        emit Log_ConfirmBuy(msg.sender, address(this), _tokenId, pigs[_tokenId].status);
+    }
+
+    //把猪转到另一个地址，要确保ERC-721兼容，否则可能丢失。2-3
     function transfer(address _to, uint256 _tokenId) external {
         // 防止转移到0x0
         require(_to != address(0));
         require(_to !=address(this));
         // 只能转让自己的猪
         require(_owns(msg.sender,_tokenId));
-        require(pigs[_tokenId].status == 1);
+        require(pigs[_tokenId].status == 2);
 
         // 修改主人，发出Transfer事件
-        pigs[_tokenId].status = 2;
+        pigs[_tokenId].status = 3;
         _transfer(msg.sender, _to, _tokenId);
         pig storage Pig = pigs[_tokenId];
         Pig.currentAddress = pigIndexToOwner[_tokenId];
 
-        emit Transfer(msg.sender, _to, _tokenId, pigs[_tokenId].status);
+        emit Log_Transfer(msg.sender, _to, _tokenId, pigs[_tokenId].status);
 
     }
 
-    //买家改变状态发货 2-3
-    function changeStatus(address payable _to,uint256 _tokenId)external payable returns (int8){
-        require(pigs[_tokenId].status == 2);
-        pigs[_tokenId].status = 3;
-        _to.transfer(10 ether);
-        emit Transfer(address(this), _to, _tokenId, pigs[_tokenId].status);
+    //买家改变状态 确认收货 3-4
+    function changeStatus(address  _to,uint256 _tokenId)external returns (int8){
+        require(pigs[_tokenId].status == 3);
+        pigs[_tokenId].status = 4;
+        _to.transfer(1 ether);
+        emit Log_ChangeStatus(address(this), _to, _tokenId, pigs[_tokenId].status);
 
     }
 
@@ -354,23 +369,23 @@ contract pigCoreTest is pigOwnership{
     function getPig(uint256 _id) external view returns(
         address currentAddress,
         uint64 birthTime,
-        uint256 breed,
+        string breed,
         uint256 id,
         int8 status,
-        int8 pigHouse
+        uint256 pigHouse
     ){
 
         pig storage Pig = pigs[_id];
         currentAddress = address(Pig.currentAddress);
         birthTime = uint64(Pig.birthTime);
-        breed  = uint256(Pig.breed);
+        breed  = string(Pig.breed);
         id  = uint256(Pig.id);
         status = int8(Pig.status);
-        pigHouse = int8(Pig.pigHouse);
+        pigHouse = uint256(Pig.pigHouse);
 
     }
 
-    function getBalanceOf(address _owner)public view returns (uint256){
+    function getBalanceOf(address _owner)public view returns (uint){
         return _owner.balance;
     }
 

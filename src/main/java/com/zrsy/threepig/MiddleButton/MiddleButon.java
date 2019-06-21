@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.web3j.tuples.generated.Tuple6;
 
 import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.Map;
 
 @Component

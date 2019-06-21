@@ -27,8 +27,8 @@ public class FarmController {
         return farmService.getFarmInfo(address);
     }
 
-    @GetMapping("/setBigchainDBKey/{key}")
-    public ParserResult setBigchainDBKey(@PathVariable String key){
+    @PostMapping("/setBigchainDBKey")
+    public ParserResult setBigchainDBKey( String key){
         logger.info("接收到设置数据密钥的请求……"+key);
         return farmService.setBigchainDBKey(key);
     }

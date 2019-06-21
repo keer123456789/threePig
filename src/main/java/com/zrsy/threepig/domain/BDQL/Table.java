@@ -15,6 +15,15 @@ import java.util.regex.Pattern;
 
 /**
  * 表结构
+ *
+ * BDQL查询后返回的类型
+ *
+ * tableName 是查询的表名
+ * type 是查询数据的类型 metadata(transfer)/assert(create)
+ * columnName 是整个表的表头的集合（方便前端使用）
+ * data 是表中的数据
+ * rowData其中一行的数据//TODO rowData用不到了，之后将其删除，注意依赖关系
+ *
  */
 public class Table {
     private String tableName;

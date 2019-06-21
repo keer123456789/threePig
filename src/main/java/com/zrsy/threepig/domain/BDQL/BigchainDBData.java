@@ -3,7 +3,11 @@ package com.zrsy.threepig.domain.BDQL;
 import java.util.Map;
 
 /**
- * 表结构使用kv结构的存储
+ * 本类是BDQL服务的。
+ * 用于BDQL执行insert、update操作是存储数据
+ *
+ * tableName是数据insert、update的表名
+ * tableData 是数据内容，以Map为结构存储
  */
 public class BigchainDBData {
     //表名

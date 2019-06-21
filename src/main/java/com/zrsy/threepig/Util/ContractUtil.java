@@ -1,6 +1,5 @@
 package com.zrsy.threepig.Util;
 
-
 import com.zrsy.threepig.Contract.PIG.Pig;
 import com.zrsy.threepig.Contract.RBAC.User;
 import org.springframework.beans.factory.annotation.Value;

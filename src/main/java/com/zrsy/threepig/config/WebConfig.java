@@ -8,6 +8,7 @@ import org.springframework.web.filter.CorsFilter;
 
 /**
  * spring boot开启跨域访问
+ * 固定写法，不用修改
  */
 @Configuration
 public class WebConfig {

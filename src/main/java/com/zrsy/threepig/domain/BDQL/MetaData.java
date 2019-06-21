@@ -5,6 +5,10 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * 重写了BigchainDB-driver中MetaData的类，将metadata类型改写为Map<String,Object>类型
+ */
+
 public class MetaData {
 
     /**
